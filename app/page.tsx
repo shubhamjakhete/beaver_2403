@@ -1,101 +1,138 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useDashboard, useIsLive } from "@/lib/hooks";
+import StatusStrip from "@/components/StatusStrip";
+import PanelShell from "@/components/PanelShell";
+import RadialGauge from "@/components/RadialGauge";
+import LcdCard from "@/components/LcdCard";
+import TankCapsule from "@/components/TankCapsule";
+import TrendStripPreview from "@/components/TrendStripPreview";
+import { fmt, fmtSigned } from "@/lib/utils";
+
+export default function OverviewPage() {
+  const { data, isError } = useDashboard();
+  const row = data?.latest;
+  const isLive = useIsLive(row?.event_timestamp);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <StatusStrip isLive={isLive} />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {isError && (
+        <div
+          className="text-[.75rem] rounded-[8px] px-3 py-2"
+          style={{ background: "rgba(255,84,104,.08)", border: "1px solid rgba(255,84,104,.3)", color: "var(--alarm)" }}
+        >
+          Unable to reach API — showing last cached values.
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      )}
+
+      {/* Top 3-panel grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]">
+
+        {/* 1. Air Tank Pressure — each gauge independently scaled */}
+        <PanelShell title="Air Tank Pressure">
+          <div className="flex justify-between gap-[6px]">
+            <RadialGauge
+              value={row?.air_tank_pt1_psi ?? null}
+              min={0}
+              max={50}
+              unit="PSI"
+              label="PT‑1"
+            />
+            <RadialGauge
+              value={row?.air_tank_pt2_psi ?? null}
+              min={0}
+              max={150}
+              unit="PSI"
+              label="PT‑2"
+            />
+            <RadialGauge
+              value={row?.air_tank_pt3_psi ?? null}
+              min={0}
+              max={10}
+              unit="PSI"
+              label="PT‑3"
+            />
+          </div>
+        </PanelShell>
+
+        {/* 2. Water Quality — cyan LCD readouts */}
+        <PanelShell title="Water Quality">
+          <div className="grid grid-cols-2 gap-2 flex-1">
+            <LcdCard
+              label="pH"
+              value={row?.ph != null ? row.ph.toFixed(2) : null}
+              variant="accent"
+            />
+            <LcdCard
+              label="ORP"
+              value={row?.orp != null ? fmtSigned(row.orp, 0) : null}
+              unit="mV"
+              variant="accent"
+            />
+            <LcdCard
+              label="TDS"
+              value={row?.tds != null ? fmt(row.tds, 0) : null}
+              unit="ppm"
+              variant="accent"
+            />
+            <LcdCard
+              label="DO"
+              value={row?.do_oxy != null ? fmt(row.do_oxy, 1) : null}
+              unit="mg/L"
+              variant="accent"
+            />
+          </div>
+        </PanelShell>
+
+        {/* 3. Process Readouts — green LCD readouts */}
+        <PanelShell title="Process Readouts">
+          <div className="grid grid-cols-2 gap-2 flex-1">
+            <LcdCard
+              label="Flow Level"
+              value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
+              unit="GPM"
+              variant="good"
+            />
+            <LcdCard
+              label="VFD Output"
+              value={row?.vfd_output_display != null ? fmt(row.vfd_output_display, 0) : null}
+              unit="%"
+              variant="good"
+            />
+            <LcdCard
+              label="Tank Level"
+              value={row?.tank_level_1 != null ? fmt(row.tank_level_1, 0) : null}
+              unit="%"
+              variant="good"
+            />
+            {/* Efficiency — static placeholder; swap the value here when formula is defined */}
+            <LcdCard label="Efficiency" value={null} unit="%" variant="good" />
+          </div>
+        </PanelShell>
+      </div>
+
+      {/* Tank Levels */}
+      <PanelShell title="Tank Levels" note="Illustrative scale · pending confirmed tank capacity">
+        <div className="flex gap-4 flex-wrap">
+          <TankCapsule
+            name="Tank Level"
+            pct={row?.tank_level_1 ?? null}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <TankCapsule
+            name="Level Detector 2"
+            pct={row?.tank_level_2 ?? null}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      </PanelShell>
+
+      {/* Trend strip preview → /trends */}
+      <TrendStripPreview
+        ph={row?.ph}
+        tankLevel={row?.tank_level_1}
+        flowLevel={row?.flow_level}
+      />
+    </>
   );
 }
