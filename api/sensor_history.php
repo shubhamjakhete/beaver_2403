@@ -1,10 +1,18 @@
 <?php
 require_once __DIR__ . '/credentials.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Allowed sensors (map to column names — no reserved-word issues)
+// Handle CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+// Allowed sensors (validated column names — no reserved-word issues)
 $ALLOWED = [
     'ph', 'orp', 'tds', 'do_oxy',
     'air_tank_pt1_psi', 'air_tank_pt2_psi', 'air_tank_pt3_psi',
@@ -17,7 +25,7 @@ $period = $_GET['period'] ?? '24h';
 
 if (!in_array($sensor, $ALLOWED, true)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid sensor']);
+    echo json_encode(['error' => 'Invalid sensor', 'allowed' => $ALLOWED]);
     exit;
 }
 
@@ -30,7 +38,7 @@ $periodMap = [
 
 if (!isset($periodMap[$period])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid period']);
+    echo json_encode(['error' => 'Invalid period', 'allowed' => array_keys($periodMap)]);
     exit;
 }
 
@@ -43,10 +51,10 @@ try {
     );
 
     $interval = $periodMap[$period];
-    $col = $sensor; // already validated
+    $col = $sensor; // already validated against whitelist
 
-    // 24h / 7d: raw rows ordered by event_timestamp
     if ($period === '24h' || $period === '7d') {
+        // Raw rows ordered by event_timestamp
         $sql = "SELECT event_timestamp, $col AS value
                 FROM fpl_2403
                 WHERE event_timestamp >= NOW() - $interval
@@ -56,14 +64,14 @@ try {
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $data = array_map(function ($r) {
             return [
-                'event_timestamp' => $r['event_timestamp'],
+                // Normalise to ISO 8601 so new Date() works in Safari
+                'event_timestamp' => str_replace(' ', 'T', $r['event_timestamp']),
                 'value'           => (float) $r['value'],
             ];
         }, $rows);
     } else {
-        // 30d / 1y: daily/monthly aggregation
-        // NOTE: pre-aggregated tables are not built yet — this queries raw rows directly.
-        // Replace with optimised aggregation tables when available.
+        // 30d / 1y: daily/monthly aggregation over raw rows.
+        // NOTE: pre-aggregated tables not built yet — replace when available.
         $groupFmt = $period === '1y' ? '%Y-%m' : '%Y-%m-%d';
         $sql = "SELECT DATE_FORMAT(event_timestamp, '$groupFmt') AS event_timestamp,
                        AVG($col) AS avg,

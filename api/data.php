@@ -1,8 +1,16 @@
 <?php
 require_once __DIR__ . '/credentials.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+// Handle CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 try {
     $pdo = new PDO(
@@ -39,6 +47,12 @@ try {
         $row[$col] = $row[$col] !== null ? (float) $row[$col] : null;
     }
     $row['id'] = (int) $row['id'];
+
+    // Normalise timestamp to ISO 8601 with T separator so new Date() works
+    // in all browsers (Safari rejects the space-separated MySQL format).
+    if (!empty($row['event_timestamp'])) {
+        $row['event_timestamp'] = str_replace(' ', 'T', $row['event_timestamp']);
+    }
 
     echo json_encode([
         'latest'     => $row,
