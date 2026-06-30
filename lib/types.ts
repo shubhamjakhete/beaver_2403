@@ -17,6 +17,7 @@ export interface SensorRow {
 export interface DashboardData {
   latest: SensorRow;
   updated_at: string; // ISO — same as latest.event_timestamp for convenience
+  is_live: boolean;   // computed by MySQL: TIMESTAMPDIFF(SECOND, MAX(event_timestamp), NOW()) <= 600
 }
 
 export type SensorKey =

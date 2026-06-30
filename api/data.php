@@ -54,9 +54,19 @@ try {
         $row['event_timestamp'] = str_replace(' ', 'T', $row['event_timestamp']);
     }
 
+    // is_live computed entirely in MySQL — no browser clock involved.
+    // True when the most recent reading arrived within the last 10 minutes.
+    $liveStmt = $pdo->query(
+        "SELECT TIMESTAMPDIFF(SECOND, MAX(event_timestamp), NOW()) <= 600 AS is_live
+         FROM fpl_2403"
+    );
+    $liveRow  = $liveStmt->fetch(PDO::FETCH_ASSOC);
+    $is_live  = (bool) $liveRow['is_live'];
+
     echo json_encode([
         'latest'     => $row,
         'updated_at' => $row['event_timestamp'],
+        'is_live'    => $is_live,
     ]);
 
 } catch (PDOException $e) {

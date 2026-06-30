@@ -12,7 +12,7 @@ import { fmt, fmtSigned } from "@/lib/utils";
 export default function OverviewPage() {
   const { data, isError } = useDashboard();
   const row = data?.latest;
-  const isLive = useIsLive(row?.event_timestamp);
+  const isLive = useIsLive(data?.is_live);
 
   return (
     <>

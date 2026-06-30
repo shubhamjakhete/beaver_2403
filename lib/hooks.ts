@@ -23,9 +23,7 @@ export function useSensorHistory(sensor: SensorKey, period: Period) {
   });
 }
 
-/** Staleness check: data is "live" if most recent reading is within 10 minutes. */
-export function useIsLive(eventTimestamp: string | undefined): boolean {
-  if (!eventTimestamp) return false;
-  const diff = Date.now() - new Date(eventTimestamp).getTime();
-  return diff <= 10 * 60 * 1000;
+/** Liveness is determined by MySQL (TIMESTAMPDIFF on the server), not the browser clock. */
+export function useIsLive(isLiveFromApi: boolean | undefined): boolean {
+  return isLiveFromApi ?? false;
 }
