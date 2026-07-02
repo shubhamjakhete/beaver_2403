@@ -2,7 +2,7 @@ import type { DashboardData, SensorHistoryResponse, SensorKey, Period } from "./
 
 // || (not ??) so an empty-string secret also falls back to the default
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://2403.beaverecoworks.com/api";
+  process.env.NEXT_PUBLIC_API_URL || "https://bew-p2304.com/projects/2403/api";
 
 export async function fetchDashboard(): Promise<DashboardData> {
   const res = await fetch(`${API_BASE}/data.php`, { cache: "no-store" });

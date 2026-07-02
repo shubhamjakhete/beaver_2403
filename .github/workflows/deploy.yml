@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.FTPS_PASS }}
           protocol: ftps
           local-dir: ./out/
-          server-dir: /2403.beaverecoworks.com/
+          server-dir: /bew-p2304.com/projects/2403/
           # Never touch the api/ directory — PHP files are uploaded manually
           exclude: |
             **/.git*
