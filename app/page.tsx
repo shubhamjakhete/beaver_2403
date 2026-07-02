@@ -127,11 +127,14 @@ export default function OverviewPage() {
         </div>
       </PanelShell>
 
-      {/* Trend strip preview → /trends */}
+      {/* Trend strip preview → /trends (series from bundled 24h data) */}
       <TrendStripPreview
         ph={row?.ph}
+        phSeries={data?.series?.ph ?? []}
         tankLevel={row?.tank_level_1}
+        tankSeries={data?.series?.tank_level_1 ?? []}
         flowLevel={row?.flow_level}
+        flowSeries={data?.series?.flow_level ?? []}
       />
     </>
   );

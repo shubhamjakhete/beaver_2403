@@ -14,10 +14,26 @@ export interface SensorRow {
   vfd_output_display: number | null;
 }
 
+export interface SeriesData {
+  labels: string[];
+  ph: (number | null)[];
+  orp: (number | null)[];
+  tds: (number | null)[];
+  do_oxy: (number | null)[];
+  air_tank_pt1_psi: (number | null)[];
+  air_tank_pt2_psi: (number | null)[];
+  air_tank_pt3_psi: (number | null)[];
+  tank_level_1: (number | null)[];
+  tank_level_2: (number | null)[];
+  flow_level: (number | null)[];
+  vfd_output_display: (number | null)[];
+}
+
 export interface DashboardData {
   latest: SensorRow;
   updated_at: string; // ISO — same as latest.event_timestamp for convenience
   is_live: boolean;   // computed by MySQL: TIMESTAMPDIFF(SECOND, MAX(event_timestamp), NOW()) <= 600
+  series: SeriesData; // 24h history in 15-min buckets, bundled with the snapshot
 }
 
 export type SensorKey =
