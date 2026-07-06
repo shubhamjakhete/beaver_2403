@@ -27,7 +27,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BEW-2403 | Water Treatment Monitor",
+  title: "BEW-CF15-2403 | Water Treatment Monitor",
   description: "Beaver EcoWorks — Effluent Treatment Skid SCADA Dashboard",
 };
 

@@ -44,7 +44,7 @@ export default function TitleBar() {
             className="font-grotesk font-bold text-[1.05rem] tracking-[.06em]"
             style={{ color: "var(--text-hi)" }}
           >
-            BEW&#8209;2403
+            BEW&#8209;CF15&#8209;2403
           </div>
           <div className="text-[.72rem] tracking-[.03em]" style={{ color: "var(--text-mid)" }}>
             Effluent Treatment Skid &middot; Beaver EcoWorks
