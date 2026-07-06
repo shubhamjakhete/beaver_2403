@@ -63,12 +63,12 @@ export default function RadialGauge({ value, min, max, unit, label }: RadialGaug
         {/* unit */}
         <text
           x="50"
-          y="61"
+          y="62"
           textAnchor="middle"
           fontFamily="Inter, sans-serif"
-          fontSize="6"
-          fill="var(--text-low)"
-          letterSpacing="1"
+          fontSize="9"
+          fill="var(--text-mid)"
+          letterSpacing="0.5"
         >
           {unit}
         </text>

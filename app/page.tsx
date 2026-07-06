@@ -30,8 +30,8 @@ export default function OverviewPage() {
       {/* Top 3-panel grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]">
 
-        {/* 1. Air Tank Pressure — each gauge independently scaled */}
-        <PanelShell title="Air Tank Pressure">
+        {/* 1. Pressure — each gauge independently scaled */}
+        <PanelShell title="Pressure">
           <div className="flex justify-between gap-[6px]">
             <RadialGauge
               value={row?.air_tank_pt1_psi ?? null}
@@ -102,7 +102,7 @@ export default function OverviewPage() {
               variant="good"
             />
             <LcdCard
-              label="Tank Level"
+              label="Effluent Tank Level"
               value={row?.tank_level_1 != null ? fmt(row.tank_level_1, 0) : null}
               unit="%"
               variant="good"
@@ -117,7 +117,7 @@ export default function OverviewPage() {
       <PanelShell title="Tank Levels" note="Illustrative scale · pending confirmed tank capacity">
         <div className="flex gap-4 flex-wrap">
           <TankCapsule
-            name="Tank Level"
+            name="Effluent Tank Level"
             pct={row?.tank_level_1 ?? null}
           />
           <TankCapsule

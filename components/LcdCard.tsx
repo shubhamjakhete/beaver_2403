@@ -14,10 +14,11 @@ export default function LcdCard({
   variant = "good",
 }: LcdCardProps) {
   const isAccent = variant === "accent";
-  const valueColor = isAccent ? "var(--accent)" : "var(--good)";
+  // Value text is always white; keep the coloured border/background glow per variant
+  const valueColor = "var(--text-hi)";
   const valueShadow = isAccent
-    ? "0 0 9px rgba(53,197,240,.35)"
-    : "0 0 9px rgba(47,226,160,.4)";
+    ? "0 0 9px rgba(53,197,240,.2)"
+    : "0 0 9px rgba(47,226,160,.2)";
 
   const display = value == null ? "—" : String(value);
 
