@@ -6,13 +6,11 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Handle CORS preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
 
-// Allowed sensors (validated column names — no reserved-word issues)
 $ALLOWED = [
     'ph', 'orp', 'tds', 'do_oxy',
     'air_tank_pt1_psi', 'air_tank_pt2_psi', 'air_tank_pt3_psi',
@@ -51,37 +49,61 @@ try {
     );
 
     $interval = $periodMap[$period];
-    $col = $sensor; // already validated against whitelist
+    $col      = $sensor; // already validated against whitelist
 
     if ($period === '24h' || $period === '7d') {
-        // Raw rows ordered by event_timestamp
-        $sql = "SELECT event_timestamp, $col AS value
-                FROM fpl_2403
-                WHERE event_timestamp >= NOW() - $interval
-                  AND $col IS NOT NULL
-                ORDER BY event_timestamp ASC";
+        // Bucket-average to produce smooth lines instead of raw noisy readings.
+        // 24h → 15-min buckets  (STEP = 900s,  ~96 points)
+        // 7d  → 1-hour buckets  (STEP = 3600s, ~168 points)
+        $step = ($period === '24h') ? 900 : 3600;
+
+        $sql = "
+            SELECT
+                FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(event_timestamp)/$step)*$step) AS bucket,
+                AVG($col) AS value,
+                MIN($col) AS min_val,
+                MAX($col) AS max_val
+            FROM fpl_2403
+            WHERE event_timestamp >= NOW() - $interval
+              AND $col IS NOT NULL
+            GROUP BY bucket
+            ORDER BY bucket ASC
+        ";
         $stmt = $pdo->query($sql);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $data = array_map(function ($r) {
-            return [
-                // Normalise to ISO 8601 so new Date() works in Safari
-                'event_timestamp' => str_replace(' ', 'T', $r['event_timestamp']),
-                'value'           => (float) $r['value'],
+
+        // Build a complete fixed-length grid, null-filling missing buckets
+        $points   = ($period === '24h') ? 96 : 168;
+        $endTs    = (int) floor(time() / $step) * $step;
+        $byBucket = [];
+        foreach ($rows as $r) {
+            $byBucket[(int) strtotime($r['bucket'])] = $r;
+        }
+
+        $data = [];
+        for ($i = $points - 1; $i >= 0; $i--) {
+            $t = $endTs - $i * $step;
+            $r = $byBucket[$t] ?? null;
+            $data[] = [
+                'event_timestamp' => gmdate('Y-m-d\TH:i:s\Z', $t),
+                'value'           => $r ? round((float) $r['value'], 4) : null,
             ];
-        }, $rows);
+        }
+
     } else {
-        // 30d / 1y: daily/monthly aggregation over raw rows.
-        // NOTE: pre-aggregated tables not built yet — replace when available.
+        // 30d / 1y: daily / monthly averages with min/max band
         $groupFmt = $period === '1y' ? '%Y-%m' : '%Y-%m-%d';
-        $sql = "SELECT DATE_FORMAT(event_timestamp, '$groupFmt') AS event_timestamp,
-                       AVG($col) AS avg,
-                       MIN($col) AS min,
-                       MAX($col) AS max
-                FROM fpl_2403
-                WHERE event_timestamp >= NOW() - $interval
-                  AND $col IS NOT NULL
-                GROUP BY DATE_FORMAT(event_timestamp, '$groupFmt')
-                ORDER BY event_timestamp ASC";
+        $sql = "
+            SELECT DATE_FORMAT(event_timestamp, '$groupFmt') AS event_timestamp,
+                   AVG($col) AS avg,
+                   MIN($col) AS min,
+                   MAX($col) AS max
+            FROM fpl_2403
+            WHERE event_timestamp >= NOW() - $interval
+              AND $col IS NOT NULL
+            GROUP BY DATE_FORMAT(event_timestamp, '$groupFmt')
+            ORDER BY event_timestamp ASC
+        ";
         $stmt = $pdo->query($sql);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $data = array_map(function ($r) {
@@ -99,7 +121,7 @@ try {
         'sensor' => $sensor,
         'period' => $period,
         'data'   => $data,
-    ]);
+    ], JSON_UNESCAPED_SLASHES);
 
 } catch (PDOException $e) {
     http_response_code(500);

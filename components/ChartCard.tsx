@@ -135,7 +135,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
               />
               {isRollup && (
                 <Area
-                  type="monotone"
+                  type="basis"
                   dataKey="hi"
                   stroke="none"
                   fill="var(--accent-glow)"
@@ -145,7 +145,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
               )}
               {isRollup && (
                 <Area
-                  type="monotone"
+                  type="basis"
                   dataKey="lo"
                   stroke="none"
                   fill="var(--bg-panel)"
@@ -154,12 +154,13 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
                 />
               )}
               <Line
-                type="monotone"
+                type="basis"
                 dataKey="value"
                 stroke="var(--accent)"
                 strokeWidth={1.8}
                 dot={false}
                 isAnimationActive={false}
+                connectNulls={false}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -168,10 +169,10 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
 
       {/* Footer */}
       <div className="text-[.62rem]" style={{ color: "var(--text-low)" }}>
-        {period === "24h" && "Hourly samples · raw"}
-        {period === "7d" && "6-hour samples · raw"}
-        {period === "30d" && "Daily average · rollup"}
-        {period === "1y" && "Monthly average · rollup"}
+        {period === "24h" && "15-min avg · 24h"}
+        {period === "7d" && "1-hour avg · 7d"}
+        {period === "30d" && "Daily avg · 30d"}
+        {period === "1y" && "Monthly avg · 1y"}
       </div>
     </div>
   );
