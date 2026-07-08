@@ -20,12 +20,19 @@ try {
     );
 
     // ── Latest single row ────────────────────────────────────────────────────
+    // Column swap: DB column names don't match their physical measurements.
+    //   flow_level column → contains TDS readings  (ppm)
+    //   tds        column → contains DO readings   (mg/L)
+    //   do_oxy     column → contains Flow readings (GPM)
     $stmt = $pdo->query(
         'SELECT id, event_timestamp,
-                ph, orp, tds, do_oxy,
+                ph, orp,
+                flow_level  AS tds,
+                tds         AS do_oxy,
+                do_oxy      AS flow_level,
                 air_tank_pt1_psi, air_tank_pt2_psi, air_tank_pt3_psi,
                 tank_level_1, tank_level_2,
-                flow_level, vfd_output_display
+                vfd_output_display
          FROM fpl_2403
          ORDER BY event_timestamp DESC
          LIMIT 1'
@@ -67,14 +74,14 @@ try {
             FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(event_timestamp)/900)*900) AS bucket,
             AVG(ph)                 AS ph,
             AVG(orp)                AS orp,
-            AVG(tds)                AS tds,
-            AVG(do_oxy)             AS do_oxy,
+            AVG(flow_level)         AS tds,
+            AVG(tds)                AS do_oxy,
+            AVG(do_oxy)             AS flow_level,
             AVG(air_tank_pt1_psi)   AS air_tank_pt1_psi,
             AVG(air_tank_pt2_psi)   AS air_tank_pt2_psi,
             AVG(air_tank_pt3_psi)   AS air_tank_pt3_psi,
             AVG(tank_level_1)       AS tank_level_1,
             AVG(tank_level_2)       AS tank_level_2,
-            AVG(flow_level)         AS flow_level,
             AVG(vfd_output_display) AS vfd_output_display
         FROM fpl_2403
         WHERE event_timestamp >= NOW() - INTERVAL 24 HOUR

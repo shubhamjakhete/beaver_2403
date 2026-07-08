@@ -49,7 +49,17 @@ try {
     );
 
     $interval = $periodMap[$period];
-    $col      = $sensor; // already validated against whitelist
+
+    // Column swap: DB column names don't match their physical measurements.
+    //   flow_level column → TDS (ppm)
+    //   tds        column → DO  (mg/L)
+    //   do_oxy     column → Flow Level (GPM)
+    $colSwap = [
+        'tds'        => 'flow_level',
+        'do_oxy'     => 'tds',
+        'flow_level' => 'do_oxy',
+    ];
+    $col = $colSwap[$sensor] ?? $sensor; // all other sensors map to themselves
 
     if ($period === '24h' || $period === '7d') {
         // Bucket-average to produce smooth lines instead of raw noisy readings.
