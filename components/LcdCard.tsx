@@ -5,6 +5,7 @@ interface LcdCardProps {
   value: string | number | null;
   unit?: string;
   variant?: "good" | "accent";
+  color?: string;
 }
 
 export default function LcdCard({
@@ -12,10 +13,10 @@ export default function LcdCard({
   value,
   unit,
   variant = "good",
+  color,
 }: LcdCardProps) {
   const isAccent = variant === "accent";
-  // Value text is always white; keep the coloured border/background glow per variant
-  const valueColor = "var(--text-hi)";
+  const valueColor = color ?? "var(--text-hi)";
   const valueShadow = isAccent
     ? "0 0 9px rgba(53,197,240,.2)"
     : "0 0 9px rgba(47,226,160,.2)";
