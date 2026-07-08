@@ -31,7 +31,7 @@ export default function LcdCard({
     >
       <div
         className="text-[.62rem] tracking-[.07em] uppercase mb-[3px]"
-        style={{ color: labelColor ?? "var(--text-low)" }}
+        style={{ color: labelColor ?? "#ffffff" }}
       >
         {label}
       </div>
