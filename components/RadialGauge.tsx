@@ -51,7 +51,7 @@ export default function RadialGauge({ value, min, max, unit, label }: RadialGaug
         {/* numeric value */}
         <text
           x="50"
-          y="48"
+          y="44"
           textAnchor="middle"
           fontFamily="var(--font-mono), monospace"
           fontSize="13"
@@ -60,10 +60,10 @@ export default function RadialGauge({ value, min, max, unit, label }: RadialGaug
         >
           {displayVal}
         </text>
-        {/* unit */}
+        {/* unit — 12px, separated from number by ~10 SVG units of breathing room */}
         <text
           x="50"
-          y="62"
+          y="66"
           textAnchor="middle"
           fontFamily="Inter, sans-serif"
           fontSize="12"
