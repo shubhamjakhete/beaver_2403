@@ -85,7 +85,7 @@ export default function TitleBar() {
         </div>
 
         <Image
-          src="beaver-logo.png"
+          src="beaver-logo.jpeg"
           alt="Beaver EcoWorks"
           width={34}
           height={34}
