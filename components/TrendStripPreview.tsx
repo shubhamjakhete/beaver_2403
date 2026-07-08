@@ -146,7 +146,7 @@ export default function TrendStripPreview({
             <div className="min-w-[88px]">
               <div
                 className="text-[.62rem] tracking-[.07em] uppercase"
-                style={{ color: "var(--text-low)" }}
+                style={{ color: "#ffffff" }}
               >
                 {item.label}
               </div>

@@ -71,7 +71,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
         <div>
           <div
             className="font-grotesk text-[.72rem] font-semibold tracking-[.08em] uppercase"
-            style={{ color: "var(--text-mid)" }}
+            style={{ color: "#ffffff" }}
           >
             {label}
           </div>
@@ -97,10 +97,10 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
           {([["MIN", min], ["MAX", max], ["AVG", avg]] as [string, number | null][]).map(
             ([stat, val]) => (
               <div key={stat} className="flex flex-col">
-                <span className="text-[.56rem] tracking-[.06em]" style={{ color: "var(--text-low)" }}>
+                <span className="text-[.56rem] tracking-[.06em]" style={{ color: "#ffffff" }}>
                   {stat}
                 </span>
-                <span className="font-mono text-[.7rem]" style={{ color: "var(--text-mid)" }}>
+                <span className="font-mono text-[.7rem]" style={{ color: "#ffffff" }}>
                   {fmtVal(val)}
                 </span>
               </div>
