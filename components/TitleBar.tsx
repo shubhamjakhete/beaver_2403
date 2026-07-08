@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 export default function TitleBar() {
   const [time, setTime] = useState("");
@@ -31,8 +30,9 @@ export default function TitleBar() {
     >
       {/* Left — logos + device tag */}
       <div className="flex items-center gap-4">
-        <Image
-          src="/village-logo.png"
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/projects/2403/village-logo.png"
           alt="Village of Indiantown"
           width={38}
           height={38}
@@ -84,8 +84,9 @@ export default function TitleBar() {
           _SystemOperator &middot; LIVE
         </div>
 
-        <Image
-          src="/beaver-logo.jpeg"
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/projects/2403/beaver-logo.jpeg"
           alt="Beaver EcoWorks"
           width={34}
           height={34}
