@@ -114,7 +114,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Tank Levels */}
-      <PanelShell title="Tank Levels" note="Illustrative scale · pending confirmed tank capacity">
+      <PanelShell title="Tank Levels">
         <div className="flex gap-4 flex-wrap">
           <TankCapsule
             name="Effluent Tank Level"

@@ -41,11 +41,11 @@ export default function TankCapsule({ name, pct }: TankCapsuleProps) {
           />
         </div>
 
-        {/* % badge floating at waterline */}
+        {/* % badge floating at waterline — clamped so it stays visible at extremes */}
         <div
           className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[14px] px-2 py-[3px] font-mono font-semibold text-[.66rem] whitespace-nowrap"
           style={{
-            top: `${topPct}%`,
+            top: `${Math.min(88, Math.max(12, topPct))}%`,
             background: "var(--bg-deep)",
             border: "1px solid var(--accent-dim)",
             color: "var(--text-hi)",
@@ -56,22 +56,12 @@ export default function TankCapsule({ name, pct }: TankCapsuleProps) {
         </div>
       </div>
 
-      {/* Text */}
-      <div>
-        <div
-          className="font-grotesk font-semibold text-[.8rem]"
-          style={{ color: "var(--text-hi)" }}
-        >
-          {name}
-        </div>
-        <div
-          className="text-[.64rem] leading-[1.45] mt-1"
-          style={{ color: "var(--text-low)" }}
-        >
-          Illustrative scale, pending
-          <br />
-          confirmed tank capacity
-        </div>
+      {/* Label */}
+      <div
+        className="font-grotesk font-semibold text-[.8rem]"
+        style={{ color: "var(--text-hi)" }}
+      >
+        {name}
       </div>
     </div>
   );
