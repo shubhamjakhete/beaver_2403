@@ -64,7 +64,7 @@ export default function OverviewPage() {
               label="pH"
               value={row?.ph != null ? row.ph.toFixed(2) : null}
               variant="accent"
-              color="#ffffff"
+              labelColor="#ffffff"
             />
             <LcdCard
               label="ORP"

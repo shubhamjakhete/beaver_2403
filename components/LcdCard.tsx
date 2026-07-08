@@ -6,6 +6,7 @@ interface LcdCardProps {
   unit?: string;
   variant?: "good" | "accent";
   color?: string;
+  labelColor?: string;
 }
 
 export default function LcdCard({
@@ -14,6 +15,7 @@ export default function LcdCard({
   unit,
   variant = "good",
   color,
+  labelColor,
 }: LcdCardProps) {
   const isAccent = variant === "accent";
   const valueColor = color ?? "var(--text-hi)";
@@ -29,7 +31,7 @@ export default function LcdCard({
     >
       <div
         className="text-[.62rem] tracking-[.07em] uppercase mb-[3px]"
-        style={{ color: "var(--text-low)" }}
+        style={{ color: labelColor ?? "var(--text-low)" }}
       >
         {label}
       </div>
