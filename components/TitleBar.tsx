@@ -32,7 +32,7 @@ export default function TitleBar() {
       {/* Left — logos + device tag */}
       <div className="flex items-center gap-4">
         <Image
-          src="village-logo.png"
+          src="/village-logo.png"
           alt="Village of Indiantown"
           width={38}
           height={38}
@@ -85,7 +85,7 @@ export default function TitleBar() {
         </div>
 
         <Image
-          src="beaver-logo.jpeg"
+          src="/beaver-logo.jpeg"
           alt="Beaver EcoWorks"
           width={34}
           height={34}
