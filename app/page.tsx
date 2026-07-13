@@ -124,6 +124,7 @@ export default function OverviewPage() {
           <TankCapsule
             name="Level Detector 2"
             pct={row?.tank_level_2 ?? null}
+            max={200}
           />
         </div>
       </PanelShell>

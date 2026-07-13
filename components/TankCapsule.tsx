@@ -3,11 +3,14 @@
 interface TankCapsuleProps {
   name: string;
   pct: number | null;
+  max?: number; // default 100; set higher (e.g. 200) to show values beyond 100%
 }
 
-export default function TankCapsule({ name, pct }: TankCapsuleProps) {
-  const safePct = pct == null ? 0 : Math.max(0, Math.min(100, pct));
-  const topPct = 100 - safePct;
+export default function TankCapsule({ name, pct, max = 100 }: TankCapsuleProps) {
+  const rawPct = pct == null ? 0 : Math.max(0, pct);
+  // fillPct: how much of the capsule height to fill (0-100 visual %)
+  const fillPct = Math.min(100, (rawPct / max) * 100);
+  const topPct = 100 - fillPct;
 
   return (
     <div
@@ -27,7 +30,7 @@ export default function TankCapsule({ name, pct }: TankCapsuleProps) {
         <div
           className="absolute left-0 right-0 bottom-0 capsule-fill"
           style={{
-            height: `${safePct}%`,
+            height: `${fillPct}%`,
             background: "linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%)",
           }}
         >
@@ -52,7 +55,7 @@ export default function TankCapsule({ name, pct }: TankCapsuleProps) {
             boxShadow: "0 0 8px rgba(0,0,0,.5), 0 0 0 2px var(--bg-panel-alt)",
           }}
         >
-          {pct == null ? "—" : `${Math.round(safePct)}%`}
+          {pct == null ? "—" : `${Math.round(rawPct)}%`}
         </div>
       </div>
 
