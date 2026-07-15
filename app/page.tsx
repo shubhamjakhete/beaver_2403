@@ -108,8 +108,20 @@ export default function OverviewPage() {
               unit="%"
               variant="good"
             />
-            {/* Efficiency — static placeholder; swap the value here when formula is defined */}
-            <LcdCard label="Efficiency" value={null} unit="%" variant="good" />
+            {/* Efficiency = actual flow / design-point flow (950 GPM @ 80% VFD max)
+                Hidden when VFD < 20% to avoid misleading low-flow readings */}
+            <LcdCard
+              label="Efficiency"
+              value={
+                row?.vfd_output_display != null &&
+                row.vfd_output_display >= 20 &&
+                row?.flow_level != null
+                  ? fmt((row.flow_level / 950) * 100, 0)
+                  : null
+              }
+              unit="%"
+              variant="good"
+            />
           </div>
         </PanelShell>
       </div>
