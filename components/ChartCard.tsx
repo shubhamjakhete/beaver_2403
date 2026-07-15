@@ -7,10 +7,12 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 import type { SensorKey, Period, HistoryPoint } from "@/lib/types";
 import { useSensorHistory } from "@/lib/hooks";
+import { thresholds } from "@/lib/thresholds";
 
 interface ChartCardProps {
   sensor: SensorKey;
@@ -51,6 +53,18 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
   const deltaClass = delta == null ? "" : delta >= 0 ? "text-[var(--good)]" : "text-[var(--alarm)]";
   const deltaArrow = delta == null ? "" : delta >= 0 ? "▲" : "▼";
 
+  // Threshold status for current value colour
+  const t = sensor in thresholds ? thresholds[sensor as keyof typeof thresholds] : null;
+  const isAlarm = current != null && t != null && (
+    (t.alarmLow  != null && current < t.alarmLow)  ||
+    (t.alarmHigh != null && current > t.alarmHigh)
+  );
+  const isWarn = !isAlarm && current != null && t != null && (
+    (t.warnLow  != null && current < t.warnLow)  ||
+    (t.warnHigh != null && current > t.warnHigh)
+  );
+  const currentColor = isAlarm ? "var(--alarm)" : isWarn ? "var(--warn)" : "var(--text-hi)";
+
   // Build chart data
   const chartData = pts.map((p) => ({
     ts: formatTimestamp(p.event_timestamp, period),
@@ -76,7 +90,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
             {label}
           </div>
           <div className="flex items-baseline gap-1 mt-[2px]">
-            <span className="font-mono text-[1.15rem] font-semibold" style={{ color: "var(--text-hi)" }}>
+            <span className="font-mono text-[1.15rem] font-semibold" style={{ color: currentColor }}>
               {fmtVal(current)}
               {unit && (
                 <span className="text-[.62rem] ml-[3px] font-sans" style={{ color: "var(--text-mid)" }}>
@@ -153,6 +167,11 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
                   isAnimationActive={false}
                 />
               )}
+              {/* Threshold reference lines */}
+              {t?.warnLow  != null && <ReferenceLine y={t.warnLow}  stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1} />}
+              {t?.warnHigh != null && <ReferenceLine y={t.warnHigh} stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1} />}
+              {t?.alarmLow  != null && <ReferenceLine y={t.alarmLow}  stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1} />}
+              {t?.alarmHigh != null && <ReferenceLine y={t.alarmHigh} stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1} />}
               <Line
                 type="basis"
                 dataKey="value"
