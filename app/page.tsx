@@ -7,6 +7,7 @@ import RadialGauge from "@/components/RadialGauge";
 import LcdCard from "@/components/LcdCard";
 import TankCapsule from "@/components/TankCapsule";
 import TrendStripPreview from "@/components/TrendStripPreview";
+import ChartCard from "@/components/ChartCard";
 import { fmt, fmtSigned } from "@/lib/utils";
 
 export default function OverviewPage() {
@@ -130,12 +131,21 @@ export default function OverviewPage() {
 
       {/* Tank Levels */}
       <PanelShell title="Tank Levels">
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap items-start">
           <TankCapsule
             name="Process Tank"
             pct={row?.tank_level_2 ?? null}
             max={200}
           />
+          <div className="flex-1 min-w-[260px]">
+            <ChartCard
+              sensor="flow_level"
+              label="Flow Level"
+              unit="GPM"
+              decimals={0}
+              period="24h"
+            />
+          </div>
         </div>
       </PanelShell>
 
