@@ -131,33 +131,35 @@ export default function OverviewPage() {
 
       {/* Tank Levels */}
       <PanelShell title="Tank Levels">
-        <div className="flex gap-4 flex-wrap items-stretch">
-          <div className="flex items-center">
+        <div className="flex gap-4 items-stretch">
+          <div className="flex items-center flex-shrink-0">
             <TankCapsule
               name="Process Tank"
               pct={row?.tank_level_2 ?? null}
               max={200}
             />
           </div>
-          <div className="flex-1 min-w-[260px]">
-            <ChartCard
-              sensor="vfd_output_display"
-              label="VFD Output"
-              unit="%"
-              decimals={0}
-              period="24h"
-            />
-          </div>
-          <div className="flex-1 min-w-[260px]">
-            <ChartCard
-              sensor="flow_level"
-              label="Flow Sensor"
-              unit="GPM"
-              decimals={0}
-              period="24h"
-              yAxisTicks={[0, 884, 1007]}
-              yDomain={[0, 1100]}
-            />
+          <div className="flex flex-1 gap-4 min-w-0">
+            <div className="flex-1 min-w-0">
+              <ChartCard
+                sensor="vfd_output_display"
+                label="VFD Output"
+                unit="%"
+                decimals={0}
+                period="24h"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <ChartCard
+                sensor="flow_level"
+                label="Flow Sensor"
+                unit="GPM"
+                decimals={0}
+                period="24h"
+                yAxisTicks={[0, 884, 1007]}
+                yDomain={[0, 1100]}
+              />
+            </div>
           </div>
         </div>
       </PanelShell>
