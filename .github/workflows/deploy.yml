@@ -34,6 +34,7 @@ jobs:
           protocol: ftps
           local-dir: ./out/
           server-dir: /bew-p2304.com/projects/2403/
+          dangerous-clean-slate: true
           # Never touch the api/ directory — PHP files are uploaded manually
           exclude: |
             **/.git*
