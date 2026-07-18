@@ -55,7 +55,7 @@ export default function TankCapsule({ name, pct, max = 100 }: TankCapsuleProps) 
             boxShadow: "0 0 8px rgba(0,0,0,.5), 0 0 0 2px var(--bg-panel-alt)",
           }}
         >
-          {pct == null ? "—" : `${Math.round(rawPct)}%`}
+          {pct == null ? "—" : `${Math.round(rawPct)}`}
         </div>
       </div>
 

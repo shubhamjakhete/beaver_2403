@@ -108,7 +108,6 @@ export default function OverviewPage() {
             <LcdCard
               label="Effluent Tank Level"
               value={row?.tank_level_1 != null ? fmt(row.tank_level_1, 0) : null}
-              unit="%"
               variant="good"
             />
             {/* Efficiency = actual flow / design-point flow (950 GPM @ 80% VFD max)
@@ -137,7 +136,7 @@ export default function OverviewPage() {
             pct={row?.tank_level_1 ?? null}
           />
           <TankCapsule
-            name="Level Detector 2"
+            name="Process Tank"
             pct={row?.tank_level_2 ?? null}
             max={200}
           />
