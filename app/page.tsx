@@ -95,7 +95,7 @@ export default function OverviewPage() {
         <PanelShell title="Process Readouts">
           <div className="grid grid-cols-2 gap-2 flex-1">
             <LcdCard
-              label="Flow Level"
+              label="Flow Sensor"
               value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
               unit="GPM"
               variant="good"
@@ -140,7 +140,7 @@ export default function OverviewPage() {
           <div className="flex-1 min-w-[260px]">
             <ChartCard
               sensor="flow_level"
-              label="Flow Level"
+              label="Flow Sensor"
               unit="GPM"
               decimals={0}
               period="24h"

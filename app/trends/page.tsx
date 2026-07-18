@@ -19,7 +19,7 @@ const CHART_METRICS = [
   { sensor: "tds" as const, label: "TDS", unit: "ppm", decimals: 0 },
   { sensor: "do_oxy" as const, label: "DO", unit: "mg/L", decimals: 1 },
   { sensor: "tank_level_1" as const, label: "Tank Level", unit: "%", decimals: 0 },
-  { sensor: "flow_level" as const, label: "Flow Rate", unit: "GPM", decimals: 0 },
+  { sensor: "flow_level" as const, label: "Flow Sensor", unit: "GPM", decimals: 0 },
   { sensor: "vfd_output_display" as const, label: "VFD Output", unit: "%", decimals: 0 },
 ];
 

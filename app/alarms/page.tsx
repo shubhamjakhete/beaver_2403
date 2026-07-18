@@ -11,7 +11,7 @@ const SENSOR_META: Partial<Record<keyof typeof thresholds, { label: string; unit
   orp:          { label: "ORP",          unit: "mV",     decimals: 0 },
   tds:          { label: "TDS",          unit: "ppm",    decimals: 0 },
   do_oxy:       { label: "DO",           unit: "ppm",    decimals: 1 },
-  flow_level:   { label: "Flow Level",   unit: "GPM",    decimals: 0 },
+  flow_level:   { label: "Flow Sensor",  unit: "GPM",    decimals: 0 },
   tank_level_2: { label: "Product Tank", unit: "inH₂O", decimals: 0 },
 };
 
