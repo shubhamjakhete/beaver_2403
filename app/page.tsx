@@ -10,10 +10,25 @@ import TrendStripPreview from "@/components/TrendStripPreview";
 import ChartCard from "@/components/ChartCard";
 import { fmt, fmtSigned } from "@/lib/utils";
 
+// Narrow-typed helper: compute min/max/avg from a nullable number series
+function seriesStats(series: (number | null)[]): { min: number | null; max: number | null; avg: number | null } {
+  const vals = series.filter((v): v is number => v != null);
+  if (!vals.length) return { min: null, max: null, avg: null };
+  return {
+    min: Math.min(...vals),
+    max: Math.max(...vals),
+    avg: vals.reduce((a, b) => a + b, 0) / vals.length,
+  };
+}
+
 export default function OverviewPage() {
   const { data, isError } = useDashboard();
   const row = data?.latest;
   const isLive = useIsLive(data?.is_live);
+
+  // 24h stats for Process Tank bento card — derived from bundled series, no extra fetch
+  const tankStats = seriesStats(data?.series?.tank_level_2 ?? []);
+  const fmtStat = (v: number | null) => (v == null ? "—" : Math.round(v).toString());
 
   return (
     <>
@@ -129,38 +144,85 @@ export default function OverviewPage() {
         </PanelShell>
       </div>
 
-      {/* Tank Levels */}
+      {/* Tank Levels — three equal bento cards */}
       <PanelShell title="Tank Levels">
-        <div className="flex gap-4 items-stretch">
-          <div className="flex items-center flex-shrink-0">
-            <TankCapsule
-              name="Process Tank"
-              pct={row?.tank_level_2 ?? null}
-              max={200}
-            />
-          </div>
-          <div className="flex flex-1 gap-4 min-w-0">
-            <div className="flex-1 min-w-0">
-              <ChartCard
-                sensor="vfd_output_display"
-                label="VFD Output"
-                unit="%"
-                decimals={0}
-                period="24h"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          {/* Card 1: Process Tank */}
+          <div
+            className="rounded-[10px] p-[13px_15px_10px] flex flex-col gap-2 min-h-[280px]"
+            style={{ background: "var(--bg-panel)", border: "1px solid var(--line)" }}
+          >
+            {/* Header — matches ChartCard header exactly */}
+            <div className="flex items-start justify-between">
+              <div
+                className="font-grotesk text-[.72rem] font-semibold tracking-[.08em] uppercase"
+                style={{ color: "#ffffff" }}
+              >
+                Process Tank
+              </div>
+              <div className="flex gap-[10px] text-right">
+                {(
+                  [
+                    ["MIN", tankStats.min],
+                    ["MAX", tankStats.max],
+                    ["AVG", tankStats.avg],
+                  ] as [string, number | null][]
+                ).map(([stat, val]) => (
+                  <div key={stat} className="flex flex-col">
+                    <span
+                      className="text-[.56rem] tracking-[.06em]"
+                      style={{ color: "#ffffff" }}
+                    >
+                      {stat}
+                    </span>
+                    <span className="font-mono text-[.7rem]" style={{ color: "#ffffff" }}>
+                      {fmtStat(val)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Body — tank capsule centered, grows to fill card height */}
+            <div className="flex-1 min-h-0 flex items-center justify-center">
+              <TankCapsule
+                name="Process Tank"
+                pct={row?.tank_level_2 ?? null}
+                max={200}
+                variant="bento"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <ChartCard
-                sensor="flow_level"
-                label="Flow Sensor"
-                unit="GPM"
-                decimals={0}
-                period="24h"
-                yAxisTicks={[0, 884, 1007]}
-                yDomain={[0, 1100]}
-              />
+
+            {/* Footer */}
+            <div className="text-[.62rem]" style={{ color: "var(--text-low)" }}>
+              15-min avg · 24h
             </div>
           </div>
+
+          {/* Card 2: VFD Output */}
+          <ChartCard
+            sensor="vfd_output_display"
+            label="VFD Output"
+            unit="%"
+            decimals={0}
+            period="24h"
+            className="min-h-[280px]"
+            fillBody
+          />
+
+          {/* Card 3: Flow Sensor */}
+          <ChartCard
+            sensor="flow_level"
+            label="Flow Sensor"
+            unit="GPM"
+            decimals={0}
+            period="24h"
+            yAxisTicks={[0, 884, 1007]}
+            yDomain={[0, 1100]}
+            className="min-h-[280px]"
+            fillBody
+          />
         </div>
       </PanelShell>
 

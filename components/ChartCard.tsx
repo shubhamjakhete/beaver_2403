@@ -22,6 +22,10 @@ interface ChartCardProps {
   period: Period;
   yAxisTicks?: number[];
   yDomain?: [number | string, number | string];
+  /** Extra Tailwind classes applied to the outer card div (e.g. min-h-[280px]) */
+  className?: string;
+  /** When true the chart region grows to fill remaining card height instead of fixed 88px */
+  fillBody?: boolean;
 }
 
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
@@ -34,7 +38,7 @@ function formatTimestamp(ts: string, period: Period): string {
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
-export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain }: ChartCardProps) {
+export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain, className, fillBody }: ChartCardProps) {
   const { data, isLoading } = useSensorHistory(sensor, period);
   const isRollup = ROLLUP_PERIODS.includes(period);
 
@@ -79,7 +83,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
 
   return (
     <div
-      className="rounded-[10px] p-[13px_15px_10px] flex flex-col gap-2"
+      className={`rounded-[10px] p-[13px_15px_10px] flex flex-col gap-2${className ? ` ${className}` : ""}`}
       style={{ background: "var(--bg-panel)", border: "1px solid var(--line)" }}
     >
       {/* Header */}
@@ -126,7 +130,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
       </div>
 
       {/* Chart */}
-      <div className="h-[88px]">
+      <div className={fillBody ? "flex-1 min-h-0" : "h-[88px]"}>
         {isLoading && !chartData.length ? (
           <div className="h-full flex items-center justify-center text-[.65rem]" style={{ color: "var(--text-low)" }}>
             Loading…
