@@ -39,6 +39,7 @@ export default function OverviewPage() {
               max={50}
               unit="PSI"
               label="PT‑1"
+              sublabel="System Pressure"
             />
             <RadialGauge
               value={row?.air_tank_pt2_psi ?? null}
@@ -46,6 +47,7 @@ export default function OverviewPage() {
               max={150}
               unit="PSI"
               label="PT‑2"
+              sublabel="Compressor"
             />
             <RadialGauge
               value={row?.air_tank_pt3_psi ?? null}
@@ -53,6 +55,7 @@ export default function OverviewPage() {
               max={10}
               unit="PSI"
               label="PT‑3"
+              sublabel="Chem. Inj. Pr."
             />
           </div>
         </PanelShell>

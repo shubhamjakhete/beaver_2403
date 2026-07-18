@@ -10,12 +10,13 @@ interface RadialGaugeProps {
   max: number;
   unit: string;
   label: string;
+  sublabel?: string;
 }
 
 const CIRC = 251.3; // circumference for r=40
 const TRACK = 188.5; // 270/360 * CIRC
 
-export default function RadialGauge({ value, min, max, unit, label }: RadialGaugeProps) {
+export default function RadialGauge({ value, min, max, unit, label, sublabel }: RadialGaugeProps) {
   const frac =
     value == null ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)));
   const arcLen = (TRACK * frac).toFixed(1);
@@ -79,6 +80,14 @@ export default function RadialGauge({ value, min, max, unit, label }: RadialGaug
       >
         {label}
       </div>
+      {sublabel && (
+        <div
+          className="text-[.58rem] tracking-[.03em] mt-[1px] text-center"
+          style={{ color: "#ffffff" }}
+        >
+          {sublabel}
+        </div>
+      )}
     </div>
   );
 }
