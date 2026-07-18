@@ -21,17 +21,17 @@ try {
 
     // ── Latest single row ────────────────────────────────────────────────────
     // Column swap: DB column names don't match their physical measurements.
-    //   flow_level column → contains ORP readings  (mV)
+    //   do_oxy     column → contains ORP readings  (mV)
     //   orp        column → contains TDS readings  (ppm)
     //   tds        column → contains DO readings   (mg/L)
-    //   do_oxy     column → contains Flow readings (GPM)
+    //   flow_level column → contains Flow readings (GPM)
     $stmt = $pdo->query(
         'SELECT id, event_timestamp,
                 ph,
                 orp         AS tds,
-                flow_level  AS orp,
+                do_oxy      AS orp,
                 tds         AS do_oxy,
-                do_oxy      AS flow_level,
+                flow_level,
                 air_tank_pt1_psi, air_tank_pt2_psi, air_tank_pt3_psi,
                 tank_level_1, tank_level_2,
                 vfd_output_display
@@ -76,9 +76,9 @@ try {
             FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(event_timestamp)/900)*900) AS bucket,
             AVG(ph)                 AS ph,
             AVG(orp)                AS tds,
-            AVG(flow_level)         AS orp,
+            AVG(do_oxy)             AS orp,
             AVG(tds)                AS do_oxy,
-            AVG(do_oxy)             AS flow_level,
+            AVG(flow_level)         AS flow_level,
             AVG(air_tank_pt1_psi)   AS air_tank_pt1_psi,
             AVG(air_tank_pt2_psi)   AS air_tank_pt2_psi,
             AVG(air_tank_pt3_psi)   AS air_tank_pt3_psi,
