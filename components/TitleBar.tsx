@@ -89,8 +89,8 @@ export default function TitleBar() {
         <img
           src="/projects/2403/beaver-logo.jpeg"
           alt="Beaver EcoWorks"
-          width={34}
-          height={34}
+          width={48}
+          height={48}
           className="rounded"
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
