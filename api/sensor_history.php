@@ -51,11 +51,13 @@ try {
     $interval = $periodMap[$period];
 
     // Column swap: DB column names don't match their physical measurements.
-    //   flow_level column → TDS (ppm)
+    //   flow_level column → ORP (mV)
+    //   orp        column → TDS (ppm)
     //   tds        column → DO  (mg/L)
     //   do_oxy     column → Flow Level (GPM)
     $colSwap = [
-        'tds'        => 'flow_level',
+        'orp'        => 'flow_level',
+        'tds'        => 'orp',
         'do_oxy'     => 'tds',
         'flow_level' => 'do_oxy',
     ];
