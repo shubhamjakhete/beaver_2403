@@ -33,10 +33,11 @@ export default function TitleBar() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/projects/2403/village-logo.png"
-          alt="Village of Indiantown"
+          alt="Beaver EcoWorks"
           width={38}
           height={38}
           className="rounded"
+          style={{ background: "#ffffff", padding: "2px" }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
         <div>
