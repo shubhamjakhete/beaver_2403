@@ -21,6 +21,8 @@ const CHART_METRICS = [
   { sensor: "tank_level_1" as const, label: "Tank Level", unit: "%", decimals: 0 },
   { sensor: "flow_level" as const, label: "Flow Sensor", unit: "GPM", decimals: 0 },
   { sensor: "vfd_output_display" as const, label: "VFD Output", unit: "%", decimals: 0 },
+  { sensor: "air_tank_pt1_psi" as const, label: "PT-1 · System Pressure", unit: "PSI", decimals: 1 },
+  { sensor: "air_tank_pt2_psi" as const, label: "PT-2 · Compressor", unit: "PSI", decimals: 1 },
 ];
 
 export default function TrendsPage() {
