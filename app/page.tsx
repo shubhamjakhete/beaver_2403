@@ -141,6 +141,15 @@ export default function OverviewPage() {
           </div>
           <div className="flex-1 min-w-[260px]">
             <ChartCard
+              sensor="vfd_output_display"
+              label="VFD Output"
+              unit="%"
+              decimals={0}
+              period="24h"
+            />
+          </div>
+          <div className="flex-1 min-w-[260px]">
+            <ChartCard
               sensor="flow_level"
               label="Flow Sensor"
               unit="GPM"
