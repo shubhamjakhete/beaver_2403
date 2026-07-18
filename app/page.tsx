@@ -146,6 +146,8 @@ export default function OverviewPage() {
               unit="GPM"
               decimals={0}
               period="24h"
+              yAxisTicks={[0, 884, 1007]}
+              yDomain={[0, 1100]}
             />
           </div>
         </div>

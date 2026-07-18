@@ -20,6 +20,8 @@ interface ChartCardProps {
   unit: string;
   decimals?: number;
   period: Period;
+  yAxisTicks?: number[];
+  yDomain?: [number | string, number | string];
 }
 
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
@@ -32,7 +34,7 @@ function formatTimestamp(ts: string, period: Period): string {
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
-export default function ChartCard({ sensor, label, unit, decimals = 1, period }: ChartCardProps) {
+export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain }: ChartCardProps) {
   const { data, isLoading } = useSensorHistory(sensor, period);
   const isRollup = ROLLUP_PERIODS.includes(period);
 
@@ -133,7 +135,15 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period }:
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
               <XAxis dataKey="ts" hide />
-              <YAxis hide domain={["auto", "auto"]} />
+              <YAxis
+                hide={!yAxisTicks}
+                domain={yDomain ?? ["auto", "auto"]}
+                ticks={yAxisTicks}
+                tick={{ fontSize: 9, fill: "var(--text-low)", fontFamily: "monospace" }}
+                width={yAxisTicks ? 32 : 0}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
                 contentStyle={{
                   background: "var(--bg-panel-alt)",
