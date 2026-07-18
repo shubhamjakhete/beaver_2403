@@ -131,12 +131,14 @@ export default function OverviewPage() {
 
       {/* Tank Levels */}
       <PanelShell title="Tank Levels">
-        <div className="flex gap-4 flex-wrap items-start">
-          <TankCapsule
-            name="Process Tank"
-            pct={row?.tank_level_2 ?? null}
-            max={200}
-          />
+        <div className="flex gap-4 flex-wrap items-stretch">
+          <div className="flex items-center">
+            <TankCapsule
+              name="Process Tank"
+              pct={row?.tank_level_2 ?? null}
+              max={200}
+            />
+          </div>
           <div className="flex-1 min-w-[260px]">
             <ChartCard
               sensor="flow_level"
