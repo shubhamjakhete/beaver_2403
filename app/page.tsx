@@ -132,10 +132,6 @@ export default function OverviewPage() {
       <PanelShell title="Tank Levels">
         <div className="flex gap-4 flex-wrap">
           <TankCapsule
-            name="Effluent Tank Level"
-            pct={row?.tank_level_1 ?? null}
-          />
-          <TankCapsule
             name="Process Tank"
             pct={row?.tank_level_2 ?? null}
             max={200}
