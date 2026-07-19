@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   ComposedChart,
   Line,
@@ -35,7 +36,25 @@ interface ChartCardProps {
   showYAxis?: boolean;
 }
 
+type ThresholdConfig = {
+  warnLow: number | null;
+  alarmLow: number | null;
+  warnHigh: number | null;
+  alarmHigh: number | null;
+};
+
+type ThresholdTier = "warn" | "alarm";
+
+type ThresholdLineSpec = {
+  key: string;
+  y: number;
+  tier: ThresholdTier;
+  label: string;
+};
+
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
+/** Drop a warn line when it sits within this many plot-pixels of a critical line. */
+const NEAR_OVERLAP_PX = 6;
 
 function formatTimestamp(ts: string, period: Period): string {
   const d = new Date(ts);
@@ -45,9 +64,112 @@ function formatTimestamp(ts: string, period: Period): string {
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
+/**
+ * Pick which threshold ReferenceLines to draw for the current visible Y domain.
+ * - Each configured setpoint yields at most one line (HIHI / HI / LO / LOLO).
+ * - Lines outside the visible domain are omitted (domain is never padded for them).
+ * - Identical y values keep the critical tier only.
+ * - Warn + critical within ~NEAR_OVERLAP_PX keep critical only.
+ */
+function selectThresholdLines(
+  t: ThresholdConfig,
+  domainMin: number,
+  domainMax: number,
+  plotHeightPx: number,
+): ThresholdLineSpec[] {
+  const candidates: ThresholdLineSpec[] = [];
+  if (t.warnLow != null) candidates.push({ key: "warnLow", y: t.warnLow, tier: "warn", label: `LO ${t.warnLow}` });
+  if (t.alarmLow != null) candidates.push({ key: "alarmLow", y: t.alarmLow, tier: "alarm", label: `LOLO ${t.alarmLow}` });
+  if (t.warnHigh != null) candidates.push({ key: "warnHigh", y: t.warnHigh, tier: "warn", label: `HI ${t.warnHigh}` });
+  if (t.alarmHigh != null) candidates.push({ key: "alarmHigh", y: t.alarmHigh, tier: "alarm", label: `HIHI ${t.alarmHigh}` });
+
+  // Visible domain only — do not extend the axis to fit far setpoints
+  let visible = candidates.filter((c) => c.y >= domainMin && c.y <= domainMax);
+
+  // Same y value from config → keep critical, warn once in dev
+  const byY = new Map<number, ThresholdLineSpec[]>();
+  for (const c of visible) {
+    const group = byY.get(c.y) ?? [];
+    group.push(c);
+    byY.set(c.y, group);
+  }
+  visible = [];
+  Array.from(byY.values()).forEach((group) => {
+    if (group.length === 1) {
+      visible.push(group[0]);
+    } else {
+      const alarm = group.find((g) => g.tier === "alarm");
+      visible.push(alarm ?? group[0]);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          "[ChartCard] duplicate threshold y values — keeping critical only:",
+          group.map((g) => `${g.key}=${g.y}`).join(", "),
+        );
+      }
+    }
+  });
+
+  // Near-overlap in pixels: prefer the tighter (critical) line
+  const domainSpan = domainMax - domainMin;
+  if (domainSpan > 0 && plotHeightPx > 0) {
+    const pxPerUnit = plotHeightPx / domainSpan;
+    const alarms = visible.filter((v) => v.tier === "alarm");
+    visible = visible.filter((v) => {
+      if (v.tier !== "warn") return true;
+      return !alarms.some((a) => Math.abs(a.y - v.y) * pxPerUnit < NEAR_OVERLAP_PX);
+    });
+  }
+
+  return visible;
+}
+
+/** Resolve the numeric Y domain used for filtering thresholds (mirrors the axis). */
+function resolveDomain(
+  values: number[],
+  showYAxis: boolean | undefined,
+  yDomain: [number | string, number | string] | undefined,
+): { min: number; max: number } | null {
+  if (!values.length) return null;
+
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+
+  if (showYAxis) {
+    return {
+      min: Math.floor(dataMin - 20),
+      max: Math.ceil(dataMax + 20),
+    };
+  }
+
+  if (
+    yDomain &&
+    typeof yDomain[0] === "number" &&
+    typeof yDomain[1] === "number"
+  ) {
+    return { min: yDomain[0], max: yDomain[1] };
+  }
+
+  // Auto domain = data extents only (no padding for setpoints)
+  return { min: dataMin, max: dataMax };
+}
+
 export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain, className, fillBody, showYAxis }: ChartCardProps) {
   const { data, isLoading } = useSensorHistory(sensor, period);
   const isRollup = ROLLUP_PERIODS.includes(period);
+
+  const chartBodyRef = useRef<HTMLDivElement>(null);
+  const [plotHeight, setPlotHeight] = useState(88);
+
+  useEffect(() => {
+    const el = chartBodyRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect.height;
+      if (h > 0) setPlotHeight(h);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const pts: HistoryPoint[] = data?.data ?? [];
 
@@ -87,6 +209,12 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
 
   const fmtVal = (v: number | null | undefined) =>
     v == null ? "—" : v.toFixed(decimals);
+
+  const domain = resolveDomain(values, showYAxis, yDomain);
+  const thresholdLines =
+    t != null && domain != null
+      ? selectThresholdLines(t, domain.min, domain.max, plotHeight)
+      : [];
 
   return (
     <div
@@ -137,7 +265,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
       </div>
 
       {/* Chart */}
-      <div className={fillBody ? "flex-1 min-h-0" : "h-[88px]"}>
+      <div ref={chartBodyRef} className={fillBody ? "flex-1 min-h-0" : "h-[88px]"}>
         {isLoading && !chartData.length ? (
           <div className="h-full flex items-center justify-center text-[.65rem]" style={{ color: "var(--text-low)" }}>
             Loading…
@@ -206,23 +334,29 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
                   isAnimationActive={false}
                 />
               )}
-              {/* Threshold reference lines — labels shown only when showYAxis is on */}
-              {t?.warnLow  != null && (
-                <ReferenceLine y={t.warnLow}  stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1}
-                  label={showYAxis ? { value: `LO ${t.warnLow}`,   position: "right", fill: "var(--warn)",  fontSize: 10, fontFamily: "monospace" } : undefined} />
-              )}
-              {t?.warnHigh != null && (
-                <ReferenceLine y={t.warnHigh} stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1}
-                  label={showYAxis ? { value: `HI ${t.warnHigh}`,  position: "right", fill: "var(--warn)",  fontSize: 10, fontFamily: "monospace" } : undefined} />
-              )}
-              {t?.alarmLow  != null && (
-                <ReferenceLine y={t.alarmLow}  stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1}
-                  label={showYAxis ? { value: `LOLO ${t.alarmLow}`,  position: "right", fill: "var(--alarm)", fontSize: 10, fontFamily: "monospace" } : undefined} />
-              )}
-              {t?.alarmHigh != null && (
-                <ReferenceLine y={t.alarmHigh} stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1}
-                  label={showYAxis ? { value: `HIHI ${t.alarmHigh}`, position: "right", fill: "var(--alarm)", fontSize: 10, fontFamily: "monospace" } : undefined} />
-              )}
+              {/* Threshold lines — one per setpoint, decluttered (shared by all cards) */}
+              {thresholdLines.map((line) => (
+                <ReferenceLine
+                  key={line.key}
+                  y={line.y}
+                  stroke={line.tier === "warn" ? "var(--warn)" : "var(--alarm)"}
+                  strokeDasharray="3 5"
+                  strokeWidth={1}
+                  strokeOpacity={line.tier === "warn" ? 0.5 : 0.65}
+                  ifOverflow="discard"
+                  label={
+                    showYAxis
+                      ? {
+                          value: line.label,
+                          position: "right",
+                          fill: line.tier === "warn" ? "var(--warn)" : "var(--alarm)",
+                          fontSize: 10,
+                          fontFamily: "monospace",
+                        }
+                      : undefined
+                  }
+                />
+              ))}
               <Line
                 type="basis"
                 dataKey="value"

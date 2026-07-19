@@ -24,16 +24,7 @@ const PERIODS: { value: Period; label: string }[] = [
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
 
 const CHART_METRICS: ChartMetric[] = [
-  {
-    sensor: "ph",
-    label: "pH",
-    unit: "",
-    decimals: 2,
-    // Fixed (but hidden) domain gives the 4 close-together thresholds (6.5/7.0 low,
-    // 8.5/9.0 high) real vertical separation instead of being auto-compressed
-    // around the flat trace. No visible axis — yAxisTicks intentionally omitted.
-    yDomain: [6, 9.5],
-  },
+  { sensor: "ph", label: "pH", unit: "", decimals: 2 },
   { sensor: "tds", label: "TDS", unit: "ppm", decimals: 0 },
   { sensor: "do_oxy", label: "DO", unit: "mg/L", decimals: 1 },
   { sensor: "tank_level_2", label: "Process Tank", unit: "", decimals: 0 },
