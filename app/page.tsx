@@ -56,8 +56,18 @@ export default function OverviewPage() {
   );
   const tankColor = tankIsAlarm ? "var(--alarm)" : tankIsWarn ? "var(--warn)" : "var(--text-hi)";
 
-  // Mini trend chart data for the Process Tank card — reuses the bundled 24h series
-  const tankChartData = tankSeries.map((v, i) => ({ ts: i, value: v }));
+  // Mini trend chart data for the Process Tank card — reuses the bundled 24h series.
+  // Buckets are 15-min, ending at "now" — reconstruct each point's local clock time
+  // for the tooltip (the bundled series only carries values, not raw timestamps).
+  const TANK_STEP_MS = 15 * 60 * 1000;
+  const tankNowSnapped = Math.floor(Date.now() / TANK_STEP_MS) * TANK_STEP_MS;
+  const tankChartData = tankSeries.map((v, i) => {
+    const t = tankNowSnapped - (tankSeries.length - 1 - i) * TANK_STEP_MS;
+    return {
+      ts: new Date(t).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
+      value: v,
+    };
+  });
 
   return (
     <>
@@ -246,7 +256,7 @@ export default function OverviewPage() {
                         color: "var(--text-hi)",
                       }}
                       itemStyle={{ color: "var(--accent)" }}
-                      labelStyle={{ display: "none" }}
+                      labelStyle={{ color: "var(--text-mid)" }}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       formatter={(v: any) => [typeof v === "number" ? Math.round(v) : v, ""]}
                     />
