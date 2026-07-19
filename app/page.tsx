@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import {
   ComposedChart,
   Line,
@@ -9,14 +10,24 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useDashboard, useIsLive } from "@/lib/hooks";
+import type { SensorKey } from "@/lib/types";
 import StatusStrip from "@/components/StatusStrip";
 import PanelShell from "@/components/PanelShell";
 import RadialGauge from "@/components/RadialGauge";
 import LcdCard from "@/components/LcdCard";
 import TankCapsule from "@/components/TankCapsule";
 import ChartCard from "@/components/ChartCard";
+import SensorDetailModal from "@/components/SensorDetailModal";
 import { fmt, fmtSigned } from "@/lib/utils";
 import { thresholds } from "@/lib/thresholds";
+
+/** Detail overlay target — sensor prop is generic so ORP/TDS/DO can reuse later */
+type DetailTarget = {
+  sensor: SensorKey;
+  label: string;
+  unit: string;
+  decimals: number;
+};
 
 // Narrow-typed helper: compute min/max/avg from a nullable number series
 function seriesStats(series: (number | null)[]): { min: number | null; max: number | null; avg: number | null } {
@@ -33,6 +44,10 @@ export default function OverviewPage() {
   const { data, isError } = useDashboard();
   const row = data?.latest;
   const isLive = useIsLive(data?.is_live);
+
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
+  const phTileRef = useRef<HTMLDivElement>(null);
+  const detailTriggerRef = useRef<HTMLElement | null>(null);
 
   // 24h stats for Process Tank bento card — derived from bundled series, no extra fetch
   const tankSeries = data?.series?.tank_level_2 ?? [];
@@ -119,10 +134,17 @@ export default function OverviewPage() {
         <PanelShell title="Water Quality">
           <div className="grid grid-cols-2 gap-2 flex-1">
             <LcdCard
+              ref={phTileRef}
               label="pH"
               value={row?.ph != null ? row.ph.toFixed(2) : null}
               variant="accent"
               labelColor="#ffffff"
+              aria-haspopup="dialog"
+              aria-label="Open detailed pH trend"
+              onActivate={() => {
+                detailTriggerRef.current = phTileRef.current;
+                setDetail({ sensor: "ph", label: "pH", unit: "", decimals: 2 });
+              }}
             />
             <LcdCard
               label="ORP"
@@ -304,6 +326,17 @@ export default function OverviewPage() {
           />
         </div>
       </PanelShell>
+
+      {/* Sensor detail overlay — pH for now; sensor prop is reusable for ORP/TDS/DO */}
+      <SensorDetailModal
+        open={detail != null}
+        onClose={() => setDetail(null)}
+        sensor={detail?.sensor ?? "ph"}
+        label={detail?.label ?? "pH"}
+        unit={detail?.unit ?? ""}
+        decimals={detail?.decimals ?? 2}
+        returnFocusRef={detailTriggerRef}
+      />
     </>
   );
 }
