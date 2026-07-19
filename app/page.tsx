@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type RefObject } from "react";
 import {
   ComposedChart,
   Line,
@@ -47,7 +47,15 @@ export default function OverviewPage() {
 
   const [detail, setDetail] = useState<DetailTarget | null>(null);
   const phTileRef = useRef<HTMLDivElement>(null);
+  const orpTileRef = useRef<HTMLDivElement>(null);
+  const tdsTileRef = useRef<HTMLDivElement>(null);
+  const doTileRef = useRef<HTMLDivElement>(null);
   const detailTriggerRef = useRef<HTMLElement | null>(null);
+
+  function openDetail(target: DetailTarget, tileRef: RefObject<HTMLDivElement | null>) {
+    detailTriggerRef.current = tileRef.current;
+    setDetail(target);
+  }
 
   // 24h stats for Process Tank bento card — derived from bundled series, no extra fetch
   const tankSeries = data?.series?.tank_level_2 ?? [];
@@ -141,28 +149,45 @@ export default function OverviewPage() {
               labelColor="#ffffff"
               aria-haspopup="dialog"
               aria-label="Open detailed pH trend"
-              onActivate={() => {
-                detailTriggerRef.current = phTileRef.current;
-                setDetail({ sensor: "ph", label: "pH", unit: "", decimals: 2 });
-              }}
+              onActivate={() =>
+                openDetail({ sensor: "ph", label: "pH", unit: "", decimals: 2 }, phTileRef)
+              }
             />
             <LcdCard
+              ref={orpTileRef}
               label="ORP"
               value={row?.orp != null ? fmtSigned(row.orp, 0) : null}
               unit="mV"
               variant="accent"
+              aria-haspopup="dialog"
+              aria-label="Open detailed ORP trend"
+              onActivate={() =>
+                openDetail({ sensor: "orp", label: "ORP", unit: "mV", decimals: 0 }, orpTileRef)
+              }
             />
             <LcdCard
+              ref={tdsTileRef}
               label="TDS"
               value={row?.tds != null ? fmt(row.tds, 0) : null}
               unit="ppm"
               variant="accent"
+              aria-haspopup="dialog"
+              aria-label="Open detailed TDS trend"
+              onActivate={() =>
+                openDetail({ sensor: "tds", label: "TDS", unit: "ppm", decimals: 0 }, tdsTileRef)
+              }
             />
             <LcdCard
+              ref={doTileRef}
               label="DO"
               value={row?.do_oxy != null ? fmt(row.do_oxy, 1) : null}
               unit="mg/L"
               variant="accent"
+              aria-haspopup="dialog"
+              aria-label="Open detailed DO trend"
+              onActivate={() =>
+                openDetail({ sensor: "do_oxy", label: "DO", unit: "mg/L", decimals: 1 }, doTileRef)
+              }
             />
           </div>
         </PanelShell>
