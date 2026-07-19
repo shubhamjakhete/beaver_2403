@@ -9,9 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useDashboard, useIsLive } from "@/lib/hooks";
+import { useDashboard } from "@/lib/hooks";
 import type { SensorKey } from "@/lib/types";
-import StatusStrip from "@/components/StatusStrip";
 import PanelShell from "@/components/PanelShell";
 import RadialGauge from "@/components/RadialGauge";
 import LcdCard from "@/components/LcdCard";
@@ -43,7 +42,6 @@ function seriesStats(series: (number | null)[]): { min: number | null; max: numb
 export default function OverviewPage() {
   const { data, isError } = useDashboard();
   const row = data?.latest;
-  const isLive = useIsLive(data?.is_live);
 
   const [detail, setDetail] = useState<DetailTarget | null>(null);
   const phTileRef = useRef<HTMLDivElement>(null);
@@ -95,8 +93,6 @@ export default function OverviewPage() {
 
   return (
     <>
-      <StatusStrip isLive={isLive} />
-
       {isError && (
         <div
           className="text-[.75rem] rounded-[8px] px-3 py-2"

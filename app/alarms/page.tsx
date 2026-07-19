@@ -1,8 +1,7 @@
 "use client";
 
-import { useDashboard, useIsLive } from "@/lib/hooks";
+import { useDashboard } from "@/lib/hooks";
 import { thresholds } from "@/lib/thresholds";
-import StatusStrip from "@/components/StatusStrip";
 import type { SensorRow } from "@/lib/types";
 
 // Human-readable config for each sensor that has thresholds
@@ -59,15 +58,12 @@ function evaluateAlarms(row: SensorRow | undefined): AlarmItem[] {
 export default function AlarmsPage() {
   const { data, isError } = useDashboard();
   const row = data?.latest;
-  const isLive = useIsLive(data?.is_live);
   const alarms = evaluateAlarms(row);
   const activeAlarms = alarms.filter((a) => a.severity === "ALARM");
   const activeWarns  = alarms.filter((a) => a.severity === "WARN");
 
   return (
     <>
-      <StatusStrip isLive={isLive} />
-
       {isError && (
         <div
           className="text-[.75rem] rounded-[8px] px-3 py-2"
