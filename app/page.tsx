@@ -107,27 +107,26 @@ export default function OverviewPage() {
 
         {/* 3. Process Readouts — green LCD readouts */}
         <PanelShell title="Process Readouts">
-          <div className="grid grid-cols-2 gap-2 flex-1">
-            <LcdCard
-              label="Flow Sensor"
-              value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
-              unit="GPM"
-              variant="good"
-            />
-            <LcdCard
-              label="VFD Output"
-              value={row?.vfd_output_display != null ? fmt(row.vfd_output_display, 0) : null}
-              unit="%"
-              variant="good"
-            />
-            {/* Invisible spacers — keep the panel's original 2×2 height now that
-                Effluent Tank Level and Efficiency were removed */}
-            <div className="invisible" aria-hidden="true">
-              <LcdCard label="—" value={null} variant="good" />
+          {/* flex-1 fillers above/below center the 2-card row vertically while
+              preserving the panel's original height (Effluent Tank Level and
+              Efficiency were removed, but the panel must stay the same size) */}
+          <div className="flex flex-col flex-1">
+            <div className="flex-1" aria-hidden="true" />
+            <div className="grid grid-cols-2 gap-2">
+              <LcdCard
+                label="Flow Sensor"
+                value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
+                unit="GPM"
+                variant="good"
+              />
+              <LcdCard
+                label="VFD Output"
+                value={row?.vfd_output_display != null ? fmt(row.vfd_output_display, 0) : null}
+                unit="%"
+                variant="good"
+              />
             </div>
-            <div className="invisible" aria-hidden="true">
-              <LcdCard label="—" value={null} variant="good" />
-            </div>
+            <div className="flex-1" aria-hidden="true" />
           </div>
         </PanelShell>
       </div>
