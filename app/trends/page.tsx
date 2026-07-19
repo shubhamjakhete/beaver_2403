@@ -25,6 +25,7 @@ const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
 
 const CHART_METRICS: ChartMetric[] = [
   { sensor: "ph", label: "pH", unit: "", decimals: 2 },
+  { sensor: "orp", label: "ORP", unit: "mV", decimals: 0 },
   { sensor: "tds", label: "TDS", unit: "ppm", decimals: 0 },
   { sensor: "do_oxy", label: "DO", unit: "mg/L", decimals: 1 },
   { sensor: "tank_level_2", label: "Process Tank", unit: "", decimals: 0 },
@@ -41,7 +42,7 @@ export default function TrendsPage() {
   return (
     <>
       {/* Range tabs */}
-      <PanelShell title="Trends" note="6 of 12 tracked tags shown">
+      <PanelShell title="Trends" note={`${CHART_METRICS.length} of 12 tracked tags shown`}>
         <div className="flex gap-[7px] flex-wrap">
           {PERIODS.map(({ value, label }) => (
             <button
