@@ -14,9 +14,9 @@ export default function TankCapsule({ name, pct, max = 100, variant = "default" 
   const topPct = 100 - fillPct;
 
   const isBento = variant === "bento";
-  const capsuleW = isBento ? 72 : 46;
+  const capsuleW = isBento ? 52 : 46;
   const capsuleH = isBento ? 160 : 108;
-  const capsuleR = isBento ? 36 : 23;
+  const capsuleR = isBento ? 26 : 23;
 
   const capsule = (
     <div
