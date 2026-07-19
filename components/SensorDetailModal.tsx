@@ -205,7 +205,7 @@ export default function SensorDetailModal({
           period={period}
           yDomain={yDomain}
           yAxisTicks={yAxisTicks}
-          className="min-h-[340px]"
+          className="h-[380px]"
           fillBody
         />
       </div>

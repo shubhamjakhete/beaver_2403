@@ -264,13 +264,19 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
         </div>
       </div>
 
-      {/* Chart */}
-      <div ref={chartBodyRef} className={fillBody ? "flex-1 min-h-0" : "h-[88px]"}>
+      {/* Chart — fillBody uses absolute fill so ResponsiveContainer always gets a
+          real pixel height (percentage height fails when the parent only has
+          min-height / flex-1, which is how the detail modal mounts). */}
+      <div
+        ref={chartBodyRef}
+        className={fillBody ? "relative flex-1 min-h-[200px]" : "h-[88px]"}
+      >
         {isLoading && !chartData.length ? (
           <div className="h-full flex items-center justify-center text-[.65rem]" style={{ color: "var(--text-low)" }}>
             Loading…
           </div>
         ) : (
+          <div className={fillBody ? "absolute inset-0" : "h-full w-full"}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
@@ -368,6 +374,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
               />
             </ComposedChart>
           </ResponsiveContainer>
+          </div>
         )}
       </div>
 
