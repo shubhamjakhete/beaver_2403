@@ -34,8 +34,12 @@ jobs:
           protocol: ftps
           local-dir: ./out/
           server-dir: /bew-p2304.com/projects/2403/
-          dangerous-clean-slate: true
-          # Never touch the api/ directory — PHP files are uploaded manually
+          # dangerous-clean-slate is intentionally OMITTED (defaults to false).
+          # Enabling it wipes the entire server-dir before upload, which deletes
+          # api/ even when api/** is in the exclude list — the exclude only
+          # controls what gets uploaded, not what gets wiped.
+          # Without clean-slate the action does a differential sync: it uploads
+          # new/changed files and leaves everything else on the server untouched.
           exclude: |
             **/.git*
             **/.git*/**
