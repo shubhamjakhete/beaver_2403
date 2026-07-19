@@ -6,7 +6,6 @@ import PanelShell from "@/components/PanelShell";
 import RadialGauge from "@/components/RadialGauge";
 import LcdCard from "@/components/LcdCard";
 import TankCapsule from "@/components/TankCapsule";
-import TrendStripPreview from "@/components/TrendStripPreview";
 import ChartCard from "@/components/ChartCard";
 import { fmt, fmtSigned } from "@/lib/utils";
 
@@ -121,25 +120,6 @@ export default function OverviewPage() {
               unit="%"
               variant="good"
             />
-            <LcdCard
-              label="Effluent Tank Level"
-              value={row?.tank_level_1 != null ? fmt(row.tank_level_1, 0) : null}
-              variant="good"
-            />
-            {/* Efficiency = actual flow / design-point flow (950 GPM @ 80% VFD max)
-                Hidden when VFD < 20% to avoid misleading low-flow readings */}
-            <LcdCard
-              label="Efficiency"
-              value={
-                row?.vfd_output_display != null &&
-                row.vfd_output_display >= 20 &&
-                row?.flow_level != null
-                  ? fmt((row.flow_level / 950) * 100, 0)
-                  : null
-              }
-              unit="%"
-              variant="good"
-            />
           </div>
         </PanelShell>
       </div>
@@ -224,16 +204,6 @@ export default function OverviewPage() {
           />
         </div>
       </PanelShell>
-
-      {/* Trend strip preview → /trends (series from bundled 24h data) */}
-      <TrendStripPreview
-        ph={row?.ph}
-        phSeries={data?.series?.ph ?? []}
-        tankLevel={row?.tank_level_1}
-        tankSeries={data?.series?.tank_level_1 ?? []}
-        flowLevel={row?.flow_level}
-        flowSeries={data?.series?.flow_level ?? []}
-      />
     </>
   );
 }
