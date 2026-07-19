@@ -7,7 +7,7 @@
  *   ORP       : good ~+200 mV; warn <150 mV; alarm ≤0 mV (negative = reducing)
  *   TDS       : warn >800 ppm; alarm >900 ppm
  *   DO        : warn <10 ppm; alarm <8 ppm
- *   flow      : interlock at 100 GPM; functional minimum 500 GPM
+ *   flow      : LO warn 900 GPM; LOLO alarm 875 GPM (operational range 900-1007 GPM)
  *   tank_level_2 (Product Tank, 0-200 inH₂O): warn <110 or >180; alarm <80 or ≥199 (overflow)
  */
 export const thresholds = {
@@ -20,6 +20,6 @@ export const thresholds = {
   air_tank_pt3_psi: { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null  },
   tank_level_1:     { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null  },
   tank_level_2:     { warnLow: 110,  alarmLow: 80,   warnHigh: 180,  alarmHigh: 199  },
-  flow_level:       { warnLow: 500,  alarmLow: 100,  warnHigh: null, alarmHigh: null  },
+  flow_level:       { warnLow: 900,  alarmLow: 875,  warnHigh: null, alarmHigh: null  },
   vfd_output_display: { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null },
 };

@@ -146,7 +146,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={chartData}
-              margin={{ top: 2, right: 0, left: showYAxis ? 4 : 0, bottom: 0 }}
+              margin={{ top: 2, right: showYAxis ? 60 : 0, left: showYAxis ? 4 : 0, bottom: 0 }}
             >
               <XAxis dataKey="ts" hide />
               {showYAxis ? (
@@ -206,11 +206,23 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
                   isAnimationActive={false}
                 />
               )}
-              {/* Threshold reference lines */}
-              {t?.warnLow  != null && <ReferenceLine y={t.warnLow}  stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1} />}
-              {t?.warnHigh != null && <ReferenceLine y={t.warnHigh} stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1} />}
-              {t?.alarmLow  != null && <ReferenceLine y={t.alarmLow}  stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1} />}
-              {t?.alarmHigh != null && <ReferenceLine y={t.alarmHigh} stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1} />}
+              {/* Threshold reference lines — labels shown only when showYAxis is on */}
+              {t?.warnLow  != null && (
+                <ReferenceLine y={t.warnLow}  stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1}
+                  label={showYAxis ? { value: `LO ${t.warnLow}`,   position: "right", fill: "var(--warn)",  fontSize: 10, fontFamily: "monospace" } : undefined} />
+              )}
+              {t?.warnHigh != null && (
+                <ReferenceLine y={t.warnHigh} stroke="var(--warn)"  strokeDasharray="3 3" strokeWidth={1}
+                  label={showYAxis ? { value: `HI ${t.warnHigh}`,  position: "right", fill: "var(--warn)",  fontSize: 10, fontFamily: "monospace" } : undefined} />
+              )}
+              {t?.alarmLow  != null && (
+                <ReferenceLine y={t.alarmLow}  stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1}
+                  label={showYAxis ? { value: `LOLO ${t.alarmLow}`,  position: "right", fill: "var(--alarm)", fontSize: 10, fontFamily: "monospace" } : undefined} />
+              )}
+              {t?.alarmHigh != null && (
+                <ReferenceLine y={t.alarmHigh} stroke="var(--alarm)" strokeDasharray="3 3" strokeWidth={1}
+                  label={showYAxis ? { value: `HIHI ${t.alarmHigh}`, position: "right", fill: "var(--alarm)", fontSize: 10, fontFamily: "monospace" } : undefined} />
+              )}
               <Line
                 type="basis"
                 dataKey="value"
