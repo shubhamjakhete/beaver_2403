@@ -25,6 +25,16 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
+      - name: Purge stale _next/ over FTP
+        # lftp is pre-installed on GitHub's ubuntu-latest runner.
+        # Deletes only _next/ using the existing FTP credentials — api/ is never touched.
+        # This runs before the upload so the fresh build always lands on a clean slate
+        # without accumulating old content-hashed chunks that fill up disk.
+        run: |
+          lftp -u "${{ secrets.FTPS_USER }}","${{ secrets.FTPS_PASS }}" \
+               -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; rm -rf /bew-p2304.com/projects/2403/_next/; bye" \
+               "${{ secrets.FTPS_HOST }}"
+
       - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
