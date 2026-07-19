@@ -31,6 +31,7 @@ jobs:
         # This runs before the upload so the fresh build always lands on a clean slate
         # without accumulating old content-hashed chunks that fill up disk.
         run: |
+          sudo apt-get install -y lftp
           lftp -u "${{ secrets.FTPS_USER }}","${{ secrets.FTPS_PASS }}" \
                -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; rm -rf /bew-p2304.com/projects/2403/_next/; bye" \
                "${{ secrets.FTPS_HOST }}"
