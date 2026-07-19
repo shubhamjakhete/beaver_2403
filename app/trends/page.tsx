@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Period } from "@/lib/types";
+import type { Period, SensorKey } from "@/lib/types";
 import ChartCard from "@/components/ChartCard";
 import PanelShell from "@/components/PanelShell";
+
+interface ChartMetric {
+  sensor: SensorKey;
+  label: string;
+  unit: string;
+  decimals: number;
+  yDomain?: [number, number];
+  yAxisTicks?: number[];
+}
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "24h", label: "24H" },
@@ -14,24 +23,24 @@ const PERIODS: { value: Period; label: string }[] = [
 
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
 
-const CHART_METRICS = [
+const CHART_METRICS: ChartMetric[] = [
   {
-    sensor: "ph" as const,
+    sensor: "ph",
     label: "pH",
     unit: "",
     decimals: 2,
-    // Fixed domain gives the 4 close-together thresholds (6.5/7.0 low, 8.5/9.0 high)
-    // real vertical separation instead of being auto-compressed around the flat trace.
-    yDomain: [6, 9.5] as [number, number],
-    yAxisTicks: [6, 7, 8, 9],
+    // Fixed (but hidden) domain gives the 4 close-together thresholds (6.5/7.0 low,
+    // 8.5/9.0 high) real vertical separation instead of being auto-compressed
+    // around the flat trace. No visible axis — yAxisTicks intentionally omitted.
+    yDomain: [6, 9.5],
   },
-  { sensor: "tds" as const, label: "TDS", unit: "ppm", decimals: 0 },
-  { sensor: "do_oxy" as const, label: "DO", unit: "mg/L", decimals: 1 },
-  { sensor: "tank_level_2" as const, label: "Process Tank", unit: "", decimals: 0 },
-  { sensor: "flow_level" as const, label: "Flow Sensor", unit: "GPM", decimals: 0 },
-  { sensor: "vfd_output_display" as const, label: "VFD Output", unit: "%", decimals: 0 },
-  { sensor: "air_tank_pt1_psi" as const, label: "PT-1 · System Pressure", unit: "PSI", decimals: 1 },
-  { sensor: "air_tank_pt2_psi" as const, label: "PT-2 · Compressor", unit: "PSI", decimals: 1 },
+  { sensor: "tds", label: "TDS", unit: "ppm", decimals: 0 },
+  { sensor: "do_oxy", label: "DO", unit: "mg/L", decimals: 1 },
+  { sensor: "tank_level_2", label: "Process Tank", unit: "", decimals: 0 },
+  { sensor: "flow_level", label: "Flow Sensor", unit: "GPM", decimals: 0 },
+  { sensor: "vfd_output_display", label: "VFD Output", unit: "%", decimals: 0 },
+  { sensor: "air_tank_pt1_psi", label: "PT-1 · System Pressure", unit: "PSI", decimals: 1 },
+  { sensor: "air_tank_pt2_psi", label: "PT-2 · Compressor", unit: "PSI", decimals: 1 },
 ];
 
 export default function TrendsPage() {
@@ -98,8 +107,8 @@ export default function TrendsPage() {
             unit={m.unit}
             decimals={m.decimals}
             period={period}
-            yDomain={"yDomain" in m ? m.yDomain : undefined}
-            yAxisTicks={"yAxisTicks" in m ? m.yAxisTicks : undefined}
+            yDomain={m.yDomain}
+            yAxisTicks={m.yAxisTicks}
           />
         ))}
       </div>
