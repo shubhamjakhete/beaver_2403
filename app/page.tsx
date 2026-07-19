@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { useDashboard, useIsLive } from "@/lib/hooks";
 import StatusStrip from "@/components/StatusStrip";
 import PanelShell from "@/components/PanelShell";
@@ -8,6 +16,7 @@ import LcdCard from "@/components/LcdCard";
 import TankCapsule from "@/components/TankCapsule";
 import ChartCard from "@/components/ChartCard";
 import { fmt, fmtSigned } from "@/lib/utils";
+import { thresholds } from "@/lib/thresholds";
 
 // Narrow-typed helper: compute min/max/avg from a nullable number series
 function seriesStats(series: (number | null)[]): { min: number | null; max: number | null; avg: number | null } {
@@ -26,8 +35,29 @@ export default function OverviewPage() {
   const isLive = useIsLive(data?.is_live);
 
   // 24h stats for Process Tank bento card — derived from bundled series, no extra fetch
-  const tankStats = seriesStats(data?.series?.tank_level_2 ?? []);
+  const tankSeries = data?.series?.tank_level_2 ?? [];
+  const tankStats = seriesStats(tankSeries);
   const fmtStat = (v: number | null) => (v == null ? "—" : Math.round(v).toString());
+
+  const tankCurrent = row?.tank_level_2 ?? null;
+  const tankFirst = tankSeries.find((v): v is number => v != null) ?? null;
+  const tankDelta = tankCurrent != null && tankFirst != null ? tankCurrent - tankFirst : null;
+  const tankDeltaClass = tankDelta == null ? "" : tankDelta >= 0 ? "text-[var(--good)]" : "text-[var(--alarm)]";
+  const tankDeltaArrow = tankDelta == null ? "" : tankDelta >= 0 ? "▲" : "▼";
+
+  const tankT = thresholds.tank_level_2;
+  const tankIsAlarm = tankCurrent != null && (
+    (tankT.alarmLow  != null && tankCurrent < tankT.alarmLow)  ||
+    (tankT.alarmHigh != null && tankCurrent > tankT.alarmHigh)
+  );
+  const tankIsWarn = !tankIsAlarm && tankCurrent != null && (
+    (tankT.warnLow  != null && tankCurrent < tankT.warnLow)  ||
+    (tankT.warnHigh != null && tankCurrent > tankT.warnHigh)
+  );
+  const tankColor = tankIsAlarm ? "var(--alarm)" : tankIsWarn ? "var(--warn)" : "var(--text-hi)";
+
+  // Mini trend chart data for the Process Tank card — reuses the bundled 24h series
+  const tankChartData = tankSeries.map((v, i) => ({ ts: i, value: v }));
 
   return (
     <>
@@ -171,14 +201,67 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            {/* Body — tank capsule centered, grows to fill card height */}
-            <div className="flex-1 min-h-0 flex items-center justify-center">
+            {/* Current value + delta — matches the VFD Output / Flow Sensor header style */}
+            <div className="flex items-baseline gap-1 mt-[2px]">
+              <span className="font-mono text-[1.15rem] font-semibold" style={{ color: tankColor }}>
+                {tankCurrent == null ? "—" : Math.round(tankCurrent)}
+              </span>
+              {tankDelta != null && (
+                <span className={`text-[.66rem] font-sans ${tankDeltaClass}`}>
+                  {tankDeltaArrow} {Math.round(Math.abs(tankDelta))}
+                </span>
+              )}
+            </div>
+
+            {/* Body — tank capsule + 24h trend line, side by side, grows to fill card height */}
+            <div className="flex-1 min-h-0 flex items-center gap-3">
               <TankCapsule
                 name="Process Tank"
                 pct={row?.tank_level_2 ?? null}
                 max={200}
                 variant="bento"
               />
+              <div className="flex-1 min-w-0 self-stretch">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={tankChartData} margin={{ top: 2, right: 0, left: 4, bottom: 0 }}>
+                    <XAxis dataKey="ts" hide />
+                    <YAxis
+                      domain={[
+                        (dataMin: number) => Math.floor(dataMin - 10),
+                        (dataMax: number) => Math.ceil(dataMax + 10),
+                      ]}
+                      tickCount={4}
+                      tickFormatter={(v: number) => Math.round(v).toString()}
+                      tick={{ fontSize: 9, fill: "var(--text-low)", fontFamily: "monospace" }}
+                      width={30}
+                      axisLine={{ stroke: "var(--line)" }}
+                      tickLine={{ stroke: "var(--line)" }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--bg-panel-alt)",
+                        border: "1px solid var(--line)",
+                        borderRadius: "6px",
+                        fontSize: "0.7rem",
+                        color: "var(--text-hi)",
+                      }}
+                      itemStyle={{ color: "var(--accent)" }}
+                      labelStyle={{ display: "none" }}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      formatter={(v: any) => [typeof v === "number" ? Math.round(v) : v, ""]}
+                    />
+                    <Line
+                      type="basis"
+                      dataKey="value"
+                      stroke="var(--accent)"
+                      strokeWidth={1.8}
+                      dot={false}
+                      isAnimationActive={false}
+                      connectNulls={false}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Footer */}
