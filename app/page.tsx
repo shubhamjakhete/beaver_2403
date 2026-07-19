@@ -50,6 +50,7 @@ export default function OverviewPage() {
   const orpTileRef = useRef<HTMLDivElement>(null);
   const tdsTileRef = useRef<HTMLDivElement>(null);
   const doTileRef = useRef<HTMLDivElement>(null);
+  const flowTileRef = useRef<HTMLDivElement>(null);
   const detailTriggerRef = useRef<HTMLElement | null>(null);
 
   function openDetail(target: DetailTarget, tileRef: RefObject<HTMLDivElement | null>) {
@@ -201,10 +202,19 @@ export default function OverviewPage() {
             <div className="flex-1" aria-hidden="true" />
             <div className="grid grid-cols-2 gap-2">
               <LcdCard
+                ref={flowTileRef}
                 label="Flow Sensor"
                 value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
                 unit="GPM"
                 variant="good"
+                aria-haspopup="dialog"
+                aria-label="Open detailed Flow Sensor trend"
+                onActivate={() =>
+                  openDetail(
+                    { sensor: "flow_level", label: "Flow Sensor", unit: "GPM", decimals: 0 },
+                    flowTileRef,
+                  )
+                }
               />
               <LcdCard
                 label="VFD Output"
