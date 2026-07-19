@@ -120,6 +120,14 @@ export default function OverviewPage() {
               unit="%"
               variant="good"
             />
+            {/* Invisible spacers — keep the panel's original 2×2 height now that
+                Effluent Tank Level and Efficiency were removed */}
+            <div className="invisible" aria-hidden="true">
+              <LcdCard label="—" value={null} variant="good" />
+            </div>
+            <div className="invisible" aria-hidden="true">
+              <LcdCard label="—" value={null} variant="good" />
+            </div>
           </div>
         </PanelShell>
       </div>
