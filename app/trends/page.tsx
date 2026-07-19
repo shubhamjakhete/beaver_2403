@@ -15,7 +15,16 @@ const PERIODS: { value: Period; label: string }[] = [
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
 
 const CHART_METRICS = [
-  { sensor: "ph" as const, label: "pH", unit: "", decimals: 2 },
+  {
+    sensor: "ph" as const,
+    label: "pH",
+    unit: "",
+    decimals: 2,
+    // Fixed domain gives the 4 close-together thresholds (6.5/7.0 low, 8.5/9.0 high)
+    // real vertical separation instead of being auto-compressed around the flat trace.
+    yDomain: [6, 9.5] as [number, number],
+    yAxisTicks: [6, 7, 8, 9],
+  },
   { sensor: "tds" as const, label: "TDS", unit: "ppm", decimals: 0 },
   { sensor: "do_oxy" as const, label: "DO", unit: "mg/L", decimals: 1 },
   { sensor: "tank_level_2" as const, label: "Process Tank", unit: "", decimals: 0 },
@@ -89,6 +98,8 @@ export default function TrendsPage() {
             unit={m.unit}
             decimals={m.decimals}
             period={period}
+            yDomain={"yDomain" in m ? m.yDomain : undefined}
+            yAxisTicks={"yAxisTicks" in m ? m.yAxisTicks : undefined}
           />
         ))}
       </div>
