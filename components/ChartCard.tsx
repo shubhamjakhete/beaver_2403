@@ -26,6 +26,13 @@ interface ChartCardProps {
   className?: string;
   /** When true the chart region grows to fill remaining card height instead of fixed 88px */
   fillBody?: boolean;
+  /**
+   * When true, render a full Y axis: axisLine + tickLine visible, domain auto-padded
+   * ±20 around the data range so the trace fills the chart height instead of
+   * being compressed against the top.  tickFormatter rounds to integers; ~4 ticks.
+   * Takes precedence over yAxisTicks / yDomain.
+   */
+  showYAxis?: boolean;
 }
 
 const ROLLUP_PERIODS: Period[] = ["30d", "1y"];
@@ -38,7 +45,7 @@ function formatTimestamp(ts: string, period: Period): string {
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
-export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain, className, fillBody }: ChartCardProps) {
+export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain, className, fillBody, showYAxis }: ChartCardProps) {
   const { data, isLoading } = useSensorHistory(sensor, period);
   const isRollup = ROLLUP_PERIODS.includes(period);
 
@@ -137,17 +144,35 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 2, right: 0, left: showYAxis ? 4 : 0, bottom: 0 }}
+            >
               <XAxis dataKey="ts" hide />
-              <YAxis
-                hide={!yAxisTicks}
-                domain={yDomain ?? ["auto", "auto"]}
-                ticks={yAxisTicks}
-                tick={{ fontSize: 9, fill: "var(--text-low)", fontFamily: "monospace" }}
-                width={yAxisTicks ? 32 : 0}
-                axisLine={false}
-                tickLine={false}
-              />
+              {showYAxis ? (
+                <YAxis
+                  domain={[
+                    (dataMin: number) => Math.floor(dataMin - 20),
+                    (dataMax: number) => Math.ceil(dataMax + 20),
+                  ]}
+                  tickCount={4}
+                  tickFormatter={(v: number) => Math.round(v).toString()}
+                  tick={{ fontSize: 9, fill: "var(--text-low)", fontFamily: "monospace" }}
+                  width={44}
+                  axisLine={{ stroke: "var(--line)" }}
+                  tickLine={{ stroke: "var(--line)" }}
+                />
+              ) : (
+                <YAxis
+                  hide={!yAxisTicks}
+                  domain={yDomain ?? ["auto", "auto"]}
+                  ticks={yAxisTicks}
+                  tick={{ fontSize: 9, fill: "var(--text-low)", fontFamily: "monospace" }}
+                  width={yAxisTicks ? 32 : 0}
+                  axisLine={false}
+                  tickLine={false}
+                />
+              )}
               <Tooltip
                 contentStyle={{
                   background: "var(--bg-panel-alt)",

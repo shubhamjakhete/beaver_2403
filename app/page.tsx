@@ -211,15 +211,14 @@ export default function OverviewPage() {
             fillBody
           />
 
-          {/* Card 3: Flow Sensor */}
+          {/* Card 3: Flow Sensor — showYAxis gives a proper dynamic-domain axis */}
           <ChartCard
             sensor="flow_level"
             label="Flow Sensor"
             unit="GPM"
             decimals={0}
             period="24h"
-            yAxisTicks={[0, 884, 1007]}
-            yDomain={[0, 1100]}
+            showYAxis
             className="min-h-[280px]"
             fillBody
           />
