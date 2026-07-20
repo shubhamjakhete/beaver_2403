@@ -98,7 +98,7 @@ try {
             $t = $endTs - $i * $step;
             $r = $byBucket[$t] ?? null;
             $data[] = [
-                'event_timestamp' => gmdate('Y-m-d\TH:i:s\Z', $t),
+                'event_timestamp' => date('Y-m-d\TH:i:s', $t),
                 'value'           => $r ? round((float) $r['value'], 4) : null,
             ];
         }
