@@ -191,35 +191,40 @@ export default function OverviewPage() {
 
         {/* 3. Process Readouts — green LCD readouts */}
         <PanelShell title="Process Readouts">
-          {/* flex-1 fillers above/below center the 2-card row vertically while
-              preserving the panel's original height (Effluent Tank Level and
-              Efficiency were removed, but the panel must stay the same size) */}
-          <div className="flex flex-col flex-1">
-            <div className="flex-1" aria-hidden="true" />
-            <div className="grid grid-cols-2 gap-2">
-              <LcdCard
-                ref={flowTileRef}
-                label="Flow Sensor"
-                value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
-                unit="GPM"
-                variant="good"
-                aria-haspopup="dialog"
-                aria-label="Open detailed Flow Sensor trend"
-                onActivate={() =>
-                  openDetail(
-                    { sensor: "flow_level", label: "Flow Sensor", unit: "GPM", decimals: 0 },
-                    flowTileRef,
-                  )
-                }
-              />
-              <LcdCard
-                label="VFD Output"
-                value={row?.vfd_output_display != null ? fmt(row.vfd_output_display, 0) : null}
-                unit="%"
-                variant="good"
-              />
-            </div>
-            <div className="flex-1" aria-hidden="true" />
+          <div className="grid grid-cols-2 gap-2 flex-1">
+            <LcdCard
+              ref={flowTileRef}
+              label="Flow Sensor"
+              value={row?.flow_level != null ? fmt(row.flow_level, 0) : null}
+              unit="GPM"
+              variant="good"
+              aria-haspopup="dialog"
+              aria-label="Open detailed Flow Sensor trend"
+              onActivate={() =>
+                openDetail(
+                  { sensor: "flow_level", label: "Flow Sensor", unit: "GPM", decimals: 0 },
+                  flowTileRef,
+                )
+              }
+            />
+            <LcdCard
+              label="VFD Output"
+              value={row?.vfd_output_display != null ? fmt(row.vfd_output_display, 0) : null}
+              unit="%"
+              variant="good"
+            />
+            <LcdCard
+              label="Total Water Flow"
+              value={row?.total_flow != null ? fmt(row.total_flow, 0) : null}
+              unit="gal"
+              variant="good"
+            />
+            <LcdCard
+              label="Process Run Hours"
+              value={row?.system_running_hours != null ? fmt(row.system_running_hours, 0) : null}
+              unit="h"
+              variant="good"
+            />
           </div>
         </PanelShell>
       </div>

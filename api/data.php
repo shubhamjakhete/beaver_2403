@@ -34,7 +34,8 @@ try {
                 flow_level,
                 air_tank_pt1_psi, air_tank_pt2_psi, air_tank_pt3_psi,
                 tank_level_1, tank_level_2,
-                vfd_output_display
+                vfd_output_display,
+                system_running_hours, total_flow
          FROM fpl_2403
          ORDER BY event_timestamp DESC
          LIMIT 1'
@@ -51,7 +52,8 @@ try {
     // Cast numerics to float (or null)
     $numeric = ['ph','orp','tds','do_oxy',
                 'air_tank_pt1_psi','air_tank_pt2_psi','air_tank_pt3_psi',
-                'tank_level_1','tank_level_2','flow_level','vfd_output_display'];
+                'tank_level_1','tank_level_2','flow_level','vfd_output_display',
+                'system_running_hours','total_flow'];
     foreach ($numeric as $col) {
         $row[$col] = $row[$col] !== null ? (float) $row[$col] : null;
     }
@@ -84,7 +86,9 @@ try {
             AVG(air_tank_pt3_psi)   AS air_tank_pt3_psi,
             AVG(tank_level_1)       AS tank_level_1,
             AVG(tank_level_2)       AS tank_level_2,
-            AVG(vfd_output_display) AS vfd_output_display
+            AVG(vfd_output_display) AS vfd_output_display,
+            AVG(system_running_hours) AS system_running_hours,
+            AVG(total_flow)         AS total_flow
         FROM fpl_2403
         WHERE event_timestamp >= NOW() - INTERVAL 24 HOUR
         GROUP BY bucket

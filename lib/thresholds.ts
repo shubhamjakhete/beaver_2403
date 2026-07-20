@@ -22,4 +22,6 @@ export const thresholds = {
   tank_level_2:     { warnLow: 110,  alarmLow: 80,   warnHigh: 180,  alarmHigh: 199  },
   flow_level:       { warnLow: 900,  alarmLow: 875,  warnHigh: null, alarmHigh: null  },
   vfd_output_display: { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null },
+  system_running_hours: { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null },
+  total_flow:       { warnLow: null, alarmLow: null, warnHigh: null, alarmHigh: null },
 };

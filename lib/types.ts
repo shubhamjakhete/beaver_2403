@@ -12,6 +12,10 @@ export interface SensorRow {
   tank_level_2: number | null;
   flow_level: number | null;
   vfd_output_display: number | null;
+  /** Process Run Hours — PLC System_Running_Hours_L */
+  system_running_hours: number | null;
+  /** Total Water Flow — PLC Total_Flow */
+  total_flow: number | null;
 }
 
 export interface SeriesData {
@@ -27,6 +31,8 @@ export interface SeriesData {
   tank_level_2: (number | null)[];
   flow_level: (number | null)[];
   vfd_output_display: (number | null)[];
+  system_running_hours: (number | null)[];
+  total_flow: (number | null)[];
 }
 
 export interface DashboardData {
@@ -47,7 +53,9 @@ export type SensorKey =
   | "tank_level_1"
   | "tank_level_2"
   | "flow_level"
-  | "vfd_output_display";
+  | "vfd_output_display"
+  | "system_running_hours"
+  | "total_flow";
 
 export type Period = "24h" | "7d" | "30d" | "1y";
 

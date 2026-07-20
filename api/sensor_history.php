@@ -16,6 +16,7 @@ $ALLOWED = [
     'air_tank_pt1_psi', 'air_tank_pt2_psi', 'air_tank_pt3_psi',
     'tank_level_1', 'tank_level_2',
     'flow_level', 'vfd_output_display',
+    'system_running_hours', 'total_flow',
 ];
 
 $sensor = $_GET['sensor'] ?? '';

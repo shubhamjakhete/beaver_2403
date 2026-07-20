@@ -37,3 +37,6 @@ next-env.d.ts
 
 # PHP credentials — NEVER commit
 /api/credentials.php
+
+# CSV import credentials (server-only)
+/scripts/csv-import.credentials.sh
