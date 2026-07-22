@@ -56,7 +56,7 @@ export default function OverviewPage() {
     setDetail(target);
   }
 
-  // 24h stats for Process Tank bento card — derived from bundled series, no extra fetch
+  // 12h stats for Process Tank bento card — derived from bundled series, no extra fetch
   const tankSeries = data?.series?.tank_level_2 ?? [];
   const tankStats = seriesStats(tankSeries);
   const fmtStat = (v: number | null) => (v == null ? "—" : Math.round(v).toString());
@@ -78,7 +78,7 @@ export default function OverviewPage() {
   );
   const tankColor = tankIsAlarm ? "var(--alarm)" : tankIsWarn ? "var(--warn)" : "var(--text-hi)";
 
-  // Mini trend chart data for the Process Tank card — reuses the bundled 24h series.
+  // Mini trend chart data for the Process Tank card — reuses the bundled 12h series.
   // Buckets are 15-min, ending at "now" — reconstruct each point's local clock time
   // for the tooltip (the bundled series only carries values, not raw timestamps).
   const TANK_STEP_MS = 15 * 60 * 1000;
@@ -280,7 +280,7 @@ export default function OverviewPage() {
               )}
             </div>
 
-            {/* Body — tank capsule + 24h trend line, side by side, grows to fill card height */}
+            {/* Body — tank capsule + 12h trend line, side by side, grows to fill card height */}
             <div className="flex-1 min-h-0 flex items-center gap-3">
               <TankCapsule
                 name="Process Tank"
@@ -333,7 +333,7 @@ export default function OverviewPage() {
 
             {/* Footer */}
             <div className="text-[.62rem]" style={{ color: "var(--text-low)" }}>
-              15-min avg · 24h
+              15-min avg · 12h
             </div>
           </div>
 
@@ -343,7 +343,7 @@ export default function OverviewPage() {
             label="VFD Output"
             unit="%"
             decimals={0}
-            period="24h"
+            period="12h"
             className="min-h-[280px]"
             fillBody
           />
@@ -354,7 +354,7 @@ export default function OverviewPage() {
             label="Flow Sensor"
             unit="GPM"
             decimals={0}
-            period="24h"
+            period="12h"
             showYAxis
             className="min-h-[280px]"
             fillBody

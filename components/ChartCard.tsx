@@ -156,7 +156,7 @@ function resolveDomain(
 }
 
 export default function ChartCard({ sensor, label, unit, decimals = 1, period, yAxisTicks, yDomain, className, fillBody, showYAxis }: ChartCardProps) {
-  const { data, isLoading } = useSensorHistory(sensor, period);
+  const { data, isLoading, isError, error } = useSensorHistory(sensor, period);
   const isRollup = ROLLUP_PERIODS.includes(period);
 
   const chartBodyRef = useRef<HTMLDivElement>(null);
@@ -276,6 +276,10 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
         {isLoading && !chartData.length ? (
           <div className="h-full flex items-center justify-center text-[.65rem]" style={{ color: "var(--text-low)" }}>
             Loading…
+          </div>
+        ) : isError ? (
+          <div className="h-full flex items-center justify-center text-[.65rem] px-2 text-center" style={{ color: "var(--alarm)" }}>
+            {error instanceof Error ? error.message : "Failed to load history"}
           </div>
         ) : (
           <div className={fillBody ? "absolute inset-0" : "h-full w-full"}>

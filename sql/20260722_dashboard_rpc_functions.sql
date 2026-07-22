@@ -46,7 +46,7 @@ DECLARE
   v_series   json;
   v_end      timestamptz;
   v_step     interval := interval '15 minutes';
-  v_points   int := 96;
+  v_points   int := 48; -- 12h × 15-min buckets
 BEGIN
   SELECT json_build_object(
            'id',                   id::int,
@@ -105,7 +105,7 @@ BEGIN
       avg(system_running_hours)::float8   AS system_running_hours,
       avg(total_flow)::float8             AS total_flow
     FROM fpl_2403_dashboard
-    WHERE ts >= now() - interval '24 hours'
+    WHERE ts >= now() - interval '12 hours'
     GROUP BY 1
   ),
   filled AS (

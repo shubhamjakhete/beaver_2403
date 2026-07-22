@@ -23,7 +23,14 @@ async function callRpc<T>(fn: string, body: Record<string, unknown> = {}): Promi
     throw new Error(`${fn} ${res.status}`);
   }
 
-  return res.json();
+  const json = await res.json();
+
+  // RPCs return HTTP 200 with { error, allowed } for bad sensor/period — treat as failure
+  if (json && typeof json === "object" && "error" in json && !("data" in json) && !("latest" in json)) {
+    throw new Error(String((json as { error: unknown }).error));
+  }
+
+  return json as T;
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {

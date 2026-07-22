@@ -39,7 +39,7 @@ export interface DashboardData {
   latest: SensorRow;
   updated_at: string; // ISO — same as latest.event_timestamp for convenience
   is_live: boolean;   // computed by MySQL: TIMESTAMPDIFF(SECOND, MAX(event_timestamp), NOW()) <= 600
-  series: SeriesData; // 24h history in 15-min buckets, bundled with the snapshot
+  series: SeriesData; // 12h history in 15-min buckets, bundled with the snapshot
 }
 
 export type SensorKey =
