@@ -15,6 +15,7 @@ interface ChartMetric {
 }
 
 const PERIODS: { value: Period; label: string }[] = [
+  { value: "12h", label: "12H" },
   { value: "24h", label: "24H" },
   { value: "7d", label: "7D" },
   { value: "30d", label: "30D" },

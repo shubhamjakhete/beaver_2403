@@ -166,7 +166,7 @@ DECLARE
     'flow_level', 'vfd_output_display',
     'system_running_hours', 'total_flow'
   ];
-  v_periods text[] := ARRAY['24h', '7d', '30d', '1y'];
+  v_periods text[] := ARRAY['12h', '24h', '7d', '30d', '1y'];
   v_step_secs int;
   v_points    int;
   v_lookback  interval;
@@ -181,8 +181,12 @@ BEGIN
     RETURN json_build_object('error', 'Invalid period', 'allowed', to_json(v_periods));
   END IF;
 
-  IF period IN ('24h', '7d') THEN
-    IF period = '24h' THEN
+  IF period IN ('12h', '24h', '7d') THEN
+    IF period = '12h' THEN
+      v_step_secs := 900;
+      v_points    := 48;
+      v_lookback  := interval '12 hours';
+    ELSIF period = '24h' THEN
       v_step_secs := 900;
       v_points    := 96;
       v_lookback  := interval '24 hours';

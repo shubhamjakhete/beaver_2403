@@ -58,7 +58,9 @@ const NEAR_OVERLAP_PX = 6;
 
 function formatTimestamp(ts: string, period: Period): string {
   const d = new Date(ts);
-  if (period === "24h") return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  if (period === "12h" || period === "24h") {
+    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
   if (period === "7d") return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   if (period === "30d") return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
@@ -380,6 +382,7 @@ export default function ChartCard({ sensor, label, unit, decimals = 1, period, y
 
       {/* Footer */}
       <div className="text-[.62rem]" style={{ color: "var(--text-low)" }}>
+        {period === "12h" && "15-min avg · 12h"}
         {period === "24h" && "15-min avg · 24h"}
         {period === "7d" && "1-hour avg · 7d"}
         {period === "30d" && "Daily avg · 30d"}

@@ -57,7 +57,7 @@ export type SensorKey =
   | "system_running_hours"
   | "total_flow";
 
-export type Period = "24h" | "7d" | "30d" | "1y";
+export type Period = "12h" | "24h" | "7d" | "30d" | "1y";
 
 export interface HistoryPoint {
   event_timestamp: string;
