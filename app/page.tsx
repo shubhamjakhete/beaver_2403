@@ -17,7 +17,7 @@ import LcdCard from "@/components/LcdCard";
 import TankCapsule from "@/components/TankCapsule";
 import ChartCard from "@/components/ChartCard";
 import SensorDetailModal from "@/components/SensorDetailModal";
-import { fmt, fmtSigned } from "@/lib/utils";
+import { fmt, fmtRunDuration, fmtSigned } from "@/lib/utils";
 import { thresholds } from "@/lib/thresholds";
 
 /** Detail overlay target — sensor prop is generic so ORP/TDS/DO can reuse later */
@@ -221,8 +221,7 @@ export default function OverviewPage() {
             />
             <LcdCard
               label="Process Run Hours"
-              value={row?.system_running_hours != null ? fmt(row.system_running_hours, 0) : null}
-              unit="h"
+              value={fmtRunDuration(row?.system_running_hours)}
               variant="good"
             />
           </div>

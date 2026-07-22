@@ -12,7 +12,7 @@ export interface SensorRow {
   tank_level_2: number | null;
   flow_level: number | null;
   vfd_output_display: number | null;
-  /** Process Run Hours — PLC System_Running_Hours_L */
+  /** Process run accumulator in seconds (PLC System_Running_Hours_L); UI formats as D.HH:MM:SS */
   system_running_hours: number | null;
   /** Total Water Flow — PLC Total_Flow */
   total_flow: number | null;
