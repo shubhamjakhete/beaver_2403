@@ -1,16 +1,11 @@
 # BEW-CF15-2403 — Water Treatment Monitoring Dashboard
 
-A dark SCADA/HMI-styled water treatment monitoring dashboard built for **Beaver EcoWorks** and the **Village of Indiantown**. Built with Next.js 14, deployed as a static export to a cPanel server via GitHub Actions.
+Dark SCADA/HMI-styled monitoring dashboard for **Beaver EcoWorks** / **Village of Indiantown** (Effluent Treatment Skid **BEW-CF15-2403**).
 
-**Live URL:** [https://2403.beaverecoworks.com](https://2403.beaverecoworks.com)
+Built with **Next.js 14** (static export). Live process data is read from **Supabase Postgres** via two RPCs. The UI is deployed to cPanel over FTPS by GitHub Actions.
 
----
-
-## Screenshots
-
-> Overview — Air Tank Pressure, Water Quality, Process Readouts, Tank Levels, Trend Strip
-
-> Trends — 6 chart cards, 4 time ranges (24H / 7D / 30D / 1Y)
+**Live site:** [https://bew-p2304.com/projects/2403/](https://bew-p2304.com/projects/2403/)  
+*(also referenced as [2403.beaverecoworks.com](https://2403.beaverecoworks.com))*
 
 ---
 
@@ -18,16 +13,17 @@ A dark SCADA/HMI-styled water treatment monitoring dashboard built for **Beaver 
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 14 (App Router, static export) |
+| Framework | Next.js 14 (App Router, `output: 'export'`) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v3 |
 | Charts | Recharts |
 | Data fetching | TanStack React Query v5 |
-| Icons | Lucide React |
-| Animation | Framer Motion |
-| Fonts | Space Grotesk · IBM Plex Mono · Inter (via `next/font`) |
-| Backend | PHP 8 + MySQL (uploaded manually to cPanel) |
-| CI/CD | GitHub Actions → FTPS to cPanel |
+| Fonts | Space Grotesk · IBM Plex Mono · Inter (`next/font`) |
+| Live data | **Supabase Postgres** + PostgREST RPCs (browser → anon key) |
+| Ingest | OPC UA bridge → Supabase `fpl_2403` (outside this repo) |
+| CI/CD | GitHub Actions → FTPS → cPanel |
+
+> Legacy PHP + MySQL (`api/*.php`) remains in the repo as unused reference only. The dashboard no longer calls it.
 
 ---
 
@@ -35,31 +31,59 @@ A dark SCADA/HMI-styled water treatment monitoring dashboard built for **Beaver 
 
 | Route | Description |
 |---|---|
-| `/` | **Overview** — live sensor readouts: Air Tank Pressure (3 radial gauges), Water Quality (pH / ORP / TDS / DO), Process Readouts (Flow / VFD / Tank Level / Efficiency), Tank Levels (capsule gauges), Trend Strip preview |
-| `/trends` | **Trends** — 6 chart cards (pH, TDS, DO, Tank Level, Flow Rate, VFD Output) across 24H / 7D / 30D / 1Y time ranges |
-| `/controls` | **Controls** — placeholder (not built yet) |
-| `/alarms` | **Alarms** — placeholder (not built yet) |
+| `/` | **Overview** — pressure gauges, water quality tiles (+ detail modal), process readouts (Total Water Flow, Process Run Hours), tank-level bento (Process Tank / VFD / Flow) with **12h** sparklines |
+| `/trends` | **Trends** — chart grid with period chips **12H / 24H / 7D / 30D / 1Y** |
+| `/controls` | Placeholder |
+| `/alarms` | Placeholder |
+
+---
+
+## Data flow
+
+```
+PLC / HMI  →  OPC UA bridge  →  Supabase table fpl_2403 (timestamptz ts, UTC)
+                                      ↓
+                    RPCs: get_dashboard_data / get_sensor_history
+                                      ↓
+                    Next.js (lib/api.ts)  →  Overview / Trends UI
+```
+
+- Timestamps for the UI are converted in SQL to **naive America/New_York** (`YYYY-MM-DDTHH:MI:SS`, no `Z`).
+- `is_live` is computed in Postgres: `(now() - max(ts)) < 600 seconds`.
+- **Process Run Hours** is stored as **seconds**; the Overview formats it as PLC-style `D.HH:MM:SS` (e.g. `86.03:37:55`).
+
+Full Supabase setup steps: **[doc/supabase-procedure.md](doc/supabase-procedure.md)**.
+
+---
+
+## Chart periods
+
+| Period | Bucket | Points | Notes |
+|---|---|---|---|
+| **12h** | 15 min | 48 | Default on Overview charts |
+| **24h** | 15 min | 96 | Trends / detail modal |
+| **7d** | 1 hour | 168 | |
+| **30d** | 1 day | ~30 | avg + min/max band |
+| **1y** | 1 month | ~12 | avg + min/max band |
 
 ---
 
 ## Design System
 
-Dark navy SCADA theme. All values are CSS custom properties defined in `app/globals.css`.
+Dark navy SCADA theme — CSS variables in `app/globals.css`.
 
 ```css
---bg-deep:   #050d1a;   /* page background */
---bg-panel:  #0d1a2e;   /* card panels */
---bg-lcd:    #071a12;   /* LCD readout background */
---accent:    #35c5f0;   /* primary cyan — water quality, chart lines */
---good:      #2fe2a0;   /* green — process readouts, live status */
---warn:      #ffb648;   /* amber — warnings */
---alarm:     #ff5468;   /* red — alarms */
+--bg-deep:   #050d1a;
+--bg-panel:  #0d1a2e;
+--accent:    #35c5f0;
+--good:      #2fe2a0;
+--warn:      #ffb648;
+--alarm:     #ff5468;
 ```
 
-**Fonts:**
-- **Space Grotesk** — panel titles, headers, nav labels
-- **IBM Plex Mono** — every numeric sensor value (signature visual detail)
-- **Inter** — body text, labels, units
+- **Space Grotesk** — titles / nav  
+- **IBM Plex Mono** — numeric values  
+- **Inter** — body / labels  
 
 ---
 
@@ -67,233 +91,123 @@ Dark navy SCADA theme. All values are CSS custom properties defined in `app/glob
 
 ```
 beaver_2403/
-├── app/
-│   ├── layout.tsx              # Root layout: fonts, QueryProvider, TitleBar, BottomNav
-│   ├── page.tsx                # Overview page
-│   ├── trends/page.tsx         # Trends page
-│   ├── controls/page.tsx       # Placeholder
-│   └── alarms/page.tsx         # Placeholder
-├── components/
-│   ├── TitleBar.tsx            # Device tag, live clock, LIVE chip, logos
-│   ├── StatusStrip.tsx         # Mode/State/Health/Comms pills (isLive-driven)
-│   ├── BottomNav.tsx           # usePathname() active-tab routing
-│   ├── PanelShell.tsx          # Reusable dark panel wrapper
-│   ├── RadialGauge.tsx         # 270° SVG arc gauge — independently scaled per PT
-│   ├── LcdCard.tsx             # LCD readout card (green or cyan variant)
-│   ├── TankCapsule.tsx         # Capsule fill gauge with floating % badge
-│   ├── TrendStripPreview.tsx   # Sparkline strip linking to /trends
-│   ├── ChartCard.tsx           # Recharts ComposedChart (line / area+line)
-│   └── QueryProvider.tsx       # TanStack React Query client provider
+├── app/                      # Overview, Trends, Controls, Alarms
+├── components/               # TitleBar, ChartCard, LcdCard, gauges, modal, …
 ├── lib/
-│   ├── types.ts                # SensorRow, DashboardData, Period, HistoryPoint
-│   ├── thresholds.ts           # Alert threshold config (permissive defaults)
-│   ├── api.ts                  # fetchDashboard, fetchSensorHistory
-│   ├── hooks.ts                # useDashboard, useSensorHistory, useIsLive
-│   └── utils.ts                # cn, fmt, fmtSigned helpers
-├── api/                        # PHP backend — upload to cPanel manually, never by CI
-│   ├── credentials.php         # gitignored — fill in on server only
-│   ├── data.php                # Returns latest sensor row
-│   └── sensor_history.php      # Returns time-series for a sensor + period
-├── public/
-│   ├── village-logo.png        # Village of Indiantown seal
-│   └── beaver-logo.png         # Beaver EcoWorks logo
-├── .github/workflows/
-│   └── deploy.yml              # Build → FTPS deploy (skips api/)
-├── next.config.mjs             # output: 'export', trailingSlash, images.unoptimized
-└── .env.local                  # NEXT_PUBLIC_API_URL (local dev only)
+│   ├── api.ts                # Supabase RPC client (get_dashboard_data / get_sensor_history)
+│   ├── types.ts              # DashboardData, Period (12h|24h|7d|30d|1y), …
+│   ├── hooks.ts
+│   ├── thresholds.ts
+│   └── utils.ts              # fmt, fmtRunDuration (D.HH:MM:SS), …
+├── sql/                      # Run in Supabase SQL Editor (see doc/)
+│   ├── 20260722_dashboard_rpc_functions.sql   # view + both RPCs (canonical)
+│   ├── 20260722_add_12h_period.sql
+│   └── 20260722_dashboard_series_12h.sql
+├── doc/
+│   └── supabase-procedure.md # How Supabase was wired for this dashboard
+├── api/                      # LEGACY PHP (unused) — kept for reference
+├── scripts/                  # LEGACY MySQL CSV import (unused)
+├── .github/workflows/deploy.yml
+└── .env.local                # NEXT_PUBLIC_SUPABASE_URL + ANON_KEY (local)
 ```
 
 ---
 
-## Database
+## Supabase column → frontend field
 
-- **Host:** `localhost`
-- **Table:** `fpl_2403`
-- **Credentials:** defined in `api/credentials.php` on the server — never committed
+Display mapping lives in view `fpl_2403_dashboard` (single place for future swaps).
 
-### Column Mapping
+| Supabase column | Frontend field |
+|---|---|
+| `ts` | `event_timestamp` (Eastern naive text) |
+| `ph` / `orp` / `do_oxy` / `tds` | same names (**unswapped** — see TODO in SQL) |
+| `pt1_psi` / `pt2_psi` / `pt3_psi` | `air_tank_pt*_psi` |
+| `tank_level` | `tank_level_1` |
+| `tank_level_2` | `tank_level_2` |
+| `flow_level` | `flow_level` |
+| `vfd_output` | `vfd_output_display` |
+| `running_hours` | `system_running_hours` (seconds) |
+| `total_flow` | `total_flow` |
+| `flowmeter_read` | omitted (no UI field yet) |
 
-| MySQL column | TypeScript key | UI panel |
-|---|---|---|
-| `event_timestamp` | `event_timestamp` | Time axis everywhere |
-| `ph` | `ph` | Water Quality |
-| `orp` | `orp` | Water Quality |
-| `tds` | `tds` | Water Quality |
-| `do_oxy` | `do_oxy` | Water Quality |
-| `air_tank_pt1_psi` | `air_tank_pt1_psi` | Air Tank Pressure — PT-1 (0–50 psi) |
-| `air_tank_pt2_psi` | `air_tank_pt2_psi` | Air Tank Pressure — PT-2 (0–150 psi) |
-| `air_tank_pt3_psi` | `air_tank_pt3_psi` | Air Tank Pressure — PT-3 (0–10 psi) |
-| `tank_level_1` | `tank_level_1` | Tank Levels + Process Readouts |
-| `tank_level_2` | `tank_level_2` | Tank Levels |
-| `flow_level` | `flow_level` | Process Readouts |
-| `vfd_output_display` | `vfd_output_display` | Process Readouts |
-| `log_date` | — | Not used |
-| `log_date_time` | — | Not used |
-
-> `event_timestamp` is the sole time axis — it carries full datetime + millisecond precision and reflects actual sensor reading time. `log_date` and `log_date_time` are excluded from all dashboard logic.
-
-> `ph` and `orp` are trusted exactly as named — the import pipeline corrects any historical column swap upstream of this table.
+> Do **not** reuse the old MySQL/PHP `do_oxy`↔`orp`↔`tds` swap for this pipeline unless confirmed and changed in the view only.
 
 ---
 
-## API Endpoints
+## Frontend API (Supabase RPCs)
 
-Both files live in `api/` and must be **uploaded to cPanel manually**. GitHub Actions never touches the `api/` directory.
+Called from the browser with the **anon** key only (never service_role).
 
-### `GET /api/data.php`
+| RPC | Purpose |
+|---|---|
+| `POST …/rest/v1/rpc/get_dashboard_data` | Latest row + `is_live` + bundled **12h** series |
+| `POST …/rest/v1/rpc/get_sensor_history` | Body `{ "sensor", "period" }` → history points |
 
-Returns the most recent row from `fpl_2403`.
-
-```json
-{
-  "latest": {
-    "id": 12345,
-    "event_timestamp": "2026-06-29T22:30:00.000Z",
-    "ph": 7.21,
-    "orp": 318.4,
-    "tds": 124,
-    "do_oxy": 8.6,
-    "air_tank_pt1_psi": 38.2,
-    "air_tank_pt2_psi": 112.5,
-    "air_tank_pt3_psi": 7.1,
-    "tank_level_1": 64,
-    "tank_level_2": 61,
-    "flow_level": 184,
-    "vfd_output_display": 47
-  },
-  "updated_at": "2026-06-29T22:30:00.000Z"
-}
-```
-
-### `GET /api/sensor_history.php?sensor=ph&period=24h`
-
-**`sensor`** — any column key from the table above  
-**`period`** — `24h` | `7d` | `30d` | `1y`
-
-- `24h` / `7d` → raw rows, ordered by `event_timestamp`
-- `30d` / `1y` → daily/monthly aggregation (`avg`, `min`, `max`)
-
-```json
-{
-  "sensor": "ph",
-  "period": "24h",
-  "data": [
-    { "event_timestamp": "2026-06-29T00:00:00Z", "value": 7.18 },
-    { "event_timestamp": "2026-06-29T01:00:00Z", "value": 7.21 }
-  ]
-}
-```
+Shapes match `lib/types.ts` (`DashboardData`, `SensorHistoryResponse`).
 
 ---
 
 ## Local Development
 
 ```bash
-# 1. Clone
 git clone https://github.com/shubhamjakhete/beaver_2403.git
 cd beaver_2403
-
-# 2. Install
 npm install
+```
 
-# 3. Set API URL (points to live server by default)
-cp .env.local.example .env.local   # or edit .env.local directly
+Create `.env.local`:
 
-# 4. Dev server
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+```bash
 npm run dev
 # → http://localhost:3000
 ```
 
-> Without a live API, all sensor values will show `—`. The dashboard degrades gracefully — no crashes.
+Without env vars, fetches fail and values show `—` (graceful empty state).
 
 ---
 
 ## Deployment
 
-Deployment is fully automated via GitHub Actions on every push to `main`.
-
-### Flow
+On every push to `main`:
 
 ```
-git push → GitHub Actions → npm run build → out/ → FTPS → cPanel
+git push → GitHub Actions → npm run build (with Supabase env) → purge remote _next/ → FTPS upload out/
 ```
 
 ### Required GitHub Secrets
 
 | Secret | Description |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | `https://2403.beaverecoworks.com/api` |
-| `FTPS_HOST` | cPanel FTP hostname |
-| `FTPS_USER` | FTP username |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon / publishable key |
+| `FTPS_HOST` | cPanel FTP host |
+| `FTPS_USER` | FTP user |
 | `FTPS_PASS` | FTP password |
 
-### Server Directory Layout
+### Server notes
 
-```
-2403.beaverecoworks.com/
-├── index.html              ← Overview (generated by Next.js export)
-├── trends/index.html
-├── controls/index.html
-├── alarms/index.html
-├── _next/...               ← JS/CSS build assets
-└── api/                    ← PHP files — uploaded manually, never by CI
-    ├── data.php
-    ├── sensor_history.php
-    └── credentials.php     ← gitignored, filled in on cPanel only
-```
-
-> The `api/` directory is excluded from all CI deploys — PHP files and credentials are managed directly on the server.
+- Deploy target: `/bew-p2304.com/projects/2403/`
+- Workflow purges `_next/` before upload to avoid disk fill from hashed chunks
+- Do **not** enable `dangerous-clean-slate` (it can wipe unrelated server files)
+- If FTP sync breaks after a manual delete, remove remote `.ftp-deploy-sync-state.json` and re-run
 
 ---
 
-## Configuration
+## Alert Thresholds
 
-### Alert Thresholds
-
-Edit `lib/thresholds.ts` to set warn/alarm boundaries post-deployment. All values are `null` (inactive) by default — no code changes needed to the dashboard once values are filled in:
-
-```ts
-export const thresholds = {
-  ph: { warnLow: 6.5, alarmLow: 6.0, warnHigh: 8.0, alarmHigh: 8.5 },
-  // ...
-};
-```
-
-### Efficiency Formula
-
-The **Efficiency** readout in Process Readouts is a static `—` placeholder. When the formula is defined, swap in the value in `app/page.tsx`:
-
-```tsx
-// Before (placeholder):
-<LcdCard label="Efficiency" value={null} unit="%" variant="good" />
-
-// After (real formula):
-<LcdCard label="Efficiency" value={computedEfficiency} unit="%" variant="good" />
-```
+Edit `lib/thresholds.ts` (warn/alarm bounds). Charts draw selected threshold lines when in range.
 
 ---
 
-## Status Strip Logic
+## Important notes
 
-The status strip derives all state from a single freshness check:
-
-```
-isLive = (now − MAX(event_timestamp)) ≤ 10 minutes
-```
-
-| Pill | isLive = true | isLive = false |
-|---|---|---|
-| MODE | AUTO (always) | AUTO (always) |
-| STATE | RUNNING | STALE |
-| HEALTH | NORMAL | WARNING |
-| COMMS | ACTIVE | LOST |
-
-> There are no per-equipment tags in the schema. The system health indicators are **pipeline freshness proxies only** — they do not reflect the actual state of individual valves, pumps, or sensors.
-
----
-
-## Notes
-
-- **Tank level scale** is illustrative — confirmed tank capacity has not been provided. All capsule gauges display the caveat *"Illustrative scale, pending confirmed tank capacity."*
-- **30D / 1Y rollup** queries raw rows directly (daily/monthly `GROUP BY`). A pre-aggregated table pipeline is not yet built. The dashboard shows a prominent warning banner when these ranges are active.
-- **Controls** and **Alarms** pages are placeholders — out of scope for this build.
+- **OPC ingest** is outside this repo; this project only reads Supabase.
+- **Water-quality tag swaps** for the new pipeline are still under investigation — currently pass-through in `fpl_2403_dashboard`.
+- **Controls / Alarms** pages are placeholders.
+- Tank capacity scale may still be illustrative pending site confirmation.
+- See **[doc/supabase-procedure.md](doc/supabase-procedure.md)** for the full Supabase procedure (SQL order, grants, verification).
