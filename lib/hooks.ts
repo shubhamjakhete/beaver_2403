@@ -23,7 +23,7 @@ export function useSensorHistory(sensor: SensorKey, period: Period) {
   });
 }
 
-/** Liveness is determined by MySQL (TIMESTAMPDIFF on the server), not the browser clock. */
+/** Liveness from Supabase RPC (max(ts) within 10 minutes) — not the browser clock. */
 export function useIsLive(isLiveFromApi: boolean | undefined): boolean {
   return isLiveFromApi ?? false;
 }

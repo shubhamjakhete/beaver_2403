@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDashboard, useIsLive } from "@/lib/hooks";
 
 export default function TitleBar() {
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
+  const { data } = useDashboard();
+  const isLive = useIsLive(data?.is_live);
 
   useEffect(() => {
     function tick() {
@@ -23,6 +26,9 @@ export default function TitleBar() {
     return () => clearInterval(id);
   }, []);
 
+  const statusColor = isLive ? "var(--good)" : "var(--alarm)";
+  const statusLabel = isLive ? "LIVE" : "STALE";
+
   return (
     <header
       style={{ background: "var(--bg-header)", borderColor: "var(--line)" }}
@@ -33,7 +39,7 @@ export default function TitleBar() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/projects/2403/village-logo.png"
-          alt="Beaver EcoWorks"
+          alt="Village of Indiantown"
           width={48}
           height={48}
           className="rounded"
@@ -77,12 +83,13 @@ export default function TitleBar() {
             color: "var(--text-mid)",
           }}
           className="flex items-center gap-2 border rounded-[20px] px-3 py-[6px] text-[.75rem]"
+          title={isLive ? "Receiving samples within the last 10 minutes" : "No new samples within the last 10 minutes"}
         >
           <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ background: "var(--good)", boxShadow: "0 0 8px var(--good)" }}
+            className={`w-2 h-2 rounded-full${isLive ? " animate-pulse" : ""}`}
+            style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }}
           />
-          _SystemOperator &middot; LIVE
+          _SystemOperator &middot; {statusLabel}
         </div>
 
         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -3,6 +3,7 @@ import { Space_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/QueryProvider";
 import TitleBar from "@/components/TitleBar";
+import FeedStaleBanner from "@/components/FeedStaleBanner";
 import BottomNav from "@/components/BottomNav";
 
 const spaceGrotesk = Space_Grotesk({
@@ -42,6 +43,7 @@ export default function RootLayout({
         <QueryProvider>
           <div className="min-h-screen flex flex-col gap-[10px] p-[14px_18px_16px]">
             <TitleBar />
+            <FeedStaleBanner />
             <main className="flex flex-col gap-[10px] flex-1">{children}</main>
             <BottomNav />
           </div>
